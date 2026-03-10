@@ -28,7 +28,7 @@ function usePrefersReducedMotion() {
 }
 
 function useSectionScrollProgress(
-  ref: React.RefObject<HTMLElement>,
+  ref: React.RefObject<HTMLElement | null>,
   reducedMotion: boolean
 ) {
   const [p, setP] = React.useState(0);
@@ -485,7 +485,6 @@ export function HowItWorksSection() {
         </p>
       </div>
 
-      {/* MOBILE */}
       <div className="relative mt-8 md:hidden">
         <div className="relative overflow-hidden rounded-[32px] border border-app-border bg-white/72 p-4 shadow-soft backdrop-blur">
           <div className="pointer-events-none absolute inset-0">
@@ -529,38 +528,41 @@ export function HowItWorksSection() {
                       <StepDot active={isActive} done={isDone} />
                     </div>
 
-                    <Card
+                    <div
                       className={cx(
-                        "relative overflow-hidden rounded-[28px] border border-app-border bg-white/92 p-5",
-                        "transition-all duration-300 ease-out",
-                        isActive
-                          ? "shadow-[0_14px_40px_rgba(15,23,42,0.08)] ring-1 ring-[#5B6CFF]/14"
-                          : "hover:-translate-y-0.5 hover:shadow-soft"
+                        "transition-transform duration-300 ease-out",
+                        isActive ? "will-change-transform" : ""
                       )}
                       style={
-                        isActive
-                          ? {
-                              transform: reducedMotion
-                                ? undefined
-                                : "translateY(-1px) scale(1.01)",
-                            }
+                        isActive && !reducedMotion
+                          ? { transform: "translateY(-1px) scale(1.01)" }
                           : undefined
                       }
                     >
-                      <StepGlow active={isActive} />
+                      <Card
+                        className={cx(
+                          "relative overflow-hidden rounded-[28px] border border-app-border bg-white/92 p-5",
+                          "transition-all duration-300 ease-out",
+                          isActive
+                            ? "shadow-[0_14px_40px_rgba(15,23,42,0.08)] ring-1 ring-[#5B6CFF]/14"
+                            : "hover:-translate-y-0.5 hover:shadow-soft"
+                        )}
+                      >
+                        <StepGlow active={isActive} />
 
-                      <div className="relative text-xs font-semibold text-app-muted">
-                        {s.meta}
-                      </div>
+                        <div className="relative text-xs font-semibold text-app-muted">
+                          {s.meta}
+                        </div>
 
-                      <div className="relative mt-2 text-[15px] font-semibold tracking-tight text-app-ink">
-                        {s.title}
-                      </div>
+                        <div className="relative mt-2 text-[15px] font-semibold tracking-tight text-app-ink">
+                          {s.title}
+                        </div>
 
-                      <div className="relative mt-2 text-sm leading-relaxed text-app-muted">
-                        {s.desc}
-                      </div>
-                    </Card>
+                        <div className="relative mt-2 text-sm leading-relaxed text-app-muted">
+                          {s.desc}
+                        </div>
+                      </Card>
+                    </div>
                   </div>
                 );
               })}
@@ -573,7 +575,6 @@ export function HowItWorksSection() {
         </div>
       </div>
 
-      {/* DESKTOP */}
       <div className="relative mt-9 hidden md:block">
         <div className="grid grid-cols-[280px_minmax(0,1fr)] gap-10 lg:grid-cols-[300px_minmax(0,1fr)] lg:gap-14">
           <div className="sticky top-24 self-start">
@@ -622,38 +623,41 @@ export function HowItWorksSection() {
                         <StepDot active={isActive} done={isDone} />
                       </div>
 
-                      <Card
+                      <div
                         className={cx(
-                          "relative overflow-hidden rounded-[28px] border border-app-border bg-white/94 p-6",
-                          "transition-all duration-300 ease-out",
-                          isActive
-                            ? "shadow-[0_16px_44px_rgba(15,23,42,0.08)] ring-1 ring-[#5B6CFF]/14"
-                            : "hover:-translate-y-0.5 hover:shadow-soft"
+                          "transition-transform duration-300 ease-out",
+                          isActive ? "will-change-transform" : ""
                         )}
                         style={
-                          isActive
-                            ? {
-                                transform: reducedMotion
-                                  ? undefined
-                                  : "translateY(-1px) scale(1.01)",
-                              }
+                          isActive && !reducedMotion
+                            ? { transform: "translateY(-1px) scale(1.01)" }
                             : undefined
                         }
                       >
-                        <StepGlow active={isActive} />
+                        <Card
+                          className={cx(
+                            "relative overflow-hidden rounded-[28px] border border-app-border bg-white/94 p-6",
+                            "transition-all duration-300 ease-out",
+                            isActive
+                              ? "shadow-[0_16px_44px_rgba(15,23,42,0.08)] ring-1 ring-[#5B6CFF]/14"
+                              : "hover:-translate-y-0.5 hover:shadow-soft"
+                          )}
+                        >
+                          <StepGlow active={isActive} />
 
-                        <div className="relative text-xs font-semibold text-app-muted">
-                          {s.meta}
-                        </div>
+                          <div className="relative text-xs font-semibold text-app-muted">
+                            {s.meta}
+                          </div>
 
-                        <div className="relative mt-2 text-base font-semibold tracking-tight text-app-ink">
-                          {s.title}
-                        </div>
+                          <div className="relative mt-2 text-base font-semibold tracking-tight text-app-ink">
+                            {s.title}
+                          </div>
 
-                        <div className="relative mt-2 text-sm leading-relaxed text-app-muted">
-                          {s.desc}
-                        </div>
-                      </Card>
+                          <div className="relative mt-2 text-sm leading-relaxed text-app-muted">
+                            {s.desc}
+                          </div>
+                        </Card>
+                      </div>
                     </div>
                   );
                 })}
