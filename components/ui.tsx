@@ -32,11 +32,15 @@ export function Button(
   );
 }
 
-export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
+export const Input = React.forwardRef<
+  HTMLInputElement,
+  React.InputHTMLAttributes<HTMLInputElement>
+>(function Input(props, ref) {
   const { className, ...rest } = props;
 
   return (
     <input
+      ref={ref}
       className={cn(
         "w-full rounded-2xl border border-app-border bg-white/90 px-4 py-3 text-sm",
         "placeholder:text-app-muted/80",
@@ -47,7 +51,7 @@ export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
       {...rest}
     />
   );
-}
+});
 
 type SelectOption = {
   value: string;
@@ -344,15 +348,16 @@ export function Select(props: SelectProps) {
   );
 }
 
-export function Card({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
+export const Card = React.forwardRef<
+  HTMLDivElement,
+  {
+    children: React.ReactNode;
+    className?: string;
+  }
+>(function Card({ children, className }, ref) {
   return (
     <div
+      ref={ref}
       className={cn(
         "rounded-3xl border border-app-border bg-white/90 backdrop-blur",
         "shadow-soft",
@@ -362,4 +367,4 @@ export function Card({
       {children}
     </div>
   );
-}
+});

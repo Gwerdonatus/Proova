@@ -2,6 +2,8 @@
 
 import * as React from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { Region, WaitlistLead } from "@/lib/types";
 import { Card, Input, Select } from "@/components/ui";
 
@@ -77,7 +79,9 @@ function loadPaddleScript() {
       }
 
       existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error("Failed to load Paddle.js")), { once: true });
+      existing.addEventListener("error", () => reject(new Error("Failed to load Paddle.js")), {
+        once: true,
+      });
       return;
     }
 
@@ -93,9 +97,60 @@ function loadPaddleScript() {
 }
 
 const AFRICA_ISO2 = new Set([
-  "DZ","AO","BJ","BW","BF","BI","CM","CV","CF","TD","KM","CG","CD","DJ","EG","GQ","ER","SZ","ET","GA","GM","GH","GN","GW",
-  "CI","KE","LS","LR","LY","MG","MW","ML","MR","MU","MA","MZ","NA","NE","NG","RW","ST","SN","SC","SL","SO","ZA","SS","SD",
-  "TZ","TG","TN","UG","ZM","ZW",
+  "DZ",
+  "AO",
+  "BJ",
+  "BW",
+  "BF",
+  "BI",
+  "CM",
+  "CV",
+  "CF",
+  "TD",
+  "KM",
+  "CG",
+  "CD",
+  "DJ",
+  "EG",
+  "GQ",
+  "ER",
+  "SZ",
+  "ET",
+  "GA",
+  "GM",
+  "GH",
+  "GN",
+  "GW",
+  "CI",
+  "KE",
+  "LS",
+  "LR",
+  "LY",
+  "MG",
+  "MW",
+  "ML",
+  "MR",
+  "MU",
+  "MA",
+  "MZ",
+  "NA",
+  "NE",
+  "NG",
+  "RW",
+  "ST",
+  "SN",
+  "SC",
+  "SL",
+  "SO",
+  "ZA",
+  "SS",
+  "SD",
+  "TZ",
+  "TG",
+  "TN",
+  "UG",
+  "ZM",
+  "ZW",
 ]);
 
 function computeTier(countryIso2: string): Tier {
@@ -416,6 +471,8 @@ function FeatureCard({
 }
 
 export default function WaitlistPage() {
+  const router = useRouter();
+
   const [plan, setPlan] = React.useState<Plan>("waitlist");
   const [step, setStep] = React.useState<Step>(1);
 
@@ -435,6 +492,12 @@ export default function WaitlistPage() {
   const [busy, setBusy] = React.useState(false);
   const [bannerMsg, setBannerMsg] = React.useState<string | null>(null);
   const [errors, setErrors] = React.useState<Record<string, string | null>>({});
+
+  const formCardRef = React.useRef<HTMLDivElement | null>(null);
+  const stepOneRef = React.useRef<HTMLDivElement | null>(null);
+  const stepTwoRef = React.useRef<HTMLDivElement | null>(null);
+  const stepThreeRef = React.useRef<HTMLDivElement | null>(null);
+  const nameInputRef = React.useRef<HTMLInputElement | null>(null);
 
   const paddleReady = !!process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN;
   const paddleEnv = process.env.NEXT_PUBLIC_PADDLE_ENV === "sandbox" ? "sandbox" : "production";
@@ -468,9 +531,9 @@ export default function WaitlistPage() {
 
     return getCountries()
       .map((iso2) => {
-        const name = (dn?.of(iso2) || (en as any)[iso2] || iso2) as string;
+        const name = (dn?.of(iso2) || (en as Record<string, string>)[iso2] || iso2) as string;
         const flag = flagEmojiFromISO2(iso2);
-        const calling = getCountryCallingCode(iso2 as any);
+        const calling = getCountryCallingCode(iso2 as Parameters<typeof getCountryCallingCode>[0]);
         return {
           value: iso2,
           label: `${flag} ${name}`,
@@ -479,6 +542,42 @@ export default function WaitlistPage() {
       })
       .sort((a, b) => a.meta.name.localeCompare(b.meta.name));
   }, []);
+
+  const selectStyles = React.useMemo(() => {
+    return {
+      control: (base: any, state: any) => ({
+        ...base,
+        borderRadius: 18,
+        borderColor: errors.country ? "#dc2626" : state.isFocused ? "rgba(0,0,0,0.18)" : "rgba(0,0,0,0.10)",
+        boxShadow: state.isFocused ? "0 0 0 4px rgba(59,130,246,0.08)" : "none",
+        padding: "4px 6px",
+        minHeight: 50,
+        backgroundColor: "white",
+      }),
+      menu: (base: any) => ({
+        ...base,
+        borderRadius: 18,
+        overflow: "hidden",
+        boxShadow: "0 20px 44px rgba(0,0,0,0.14)",
+        border: "1px solid rgba(0,0,0,0.08)",
+        background: "white",
+        zIndex: 40,
+      }),
+      option: (base: any, state: any) => ({
+        ...base,
+        backgroundColor: state.isSelected ? "rgba(59,130,246,0.08)" : state.isFocused ? "rgba(59,130,246,0.05)" : "white",
+        color: "rgba(0,0,0,0.88)",
+        padding: "12px 12px",
+        fontWeight: state.isSelected ? 700 : 600,
+      }),
+      placeholder: (base: any) => ({ ...base, color: "rgba(0,0,0,0.40)", fontWeight: 600 }),
+      singleValue: (base: any) => ({ ...base, color: "rgba(0,0,0,0.88)", fontWeight: 700 }),
+      indicatorsContainer: (base: any) => ({ ...base, paddingRight: 8 }),
+    };
+  }, [errors.country]);
+
+  const providerLabel =
+    !provider ? "Select country" : provider === "paystack" ? "Paystack" : paddleReady ? "Paddle" : "Paddle soon";
 
   function setFieldError(key: string, msg: string | null) {
     setErrors((prev) => ({ ...prev, [key]: msg }));
@@ -489,17 +588,55 @@ export default function WaitlistPage() {
     setBannerMsg(null);
   }
 
+  function scrollFormIntoView(target?: HTMLElement | null) {
+    const el = target || formCardRef.current;
+    if (!el) return;
+
+    const isMobile = window.innerWidth < 1024;
+    el.scrollIntoView({
+      behavior: "smooth",
+      block: isMobile ? "start" : "center",
+    });
+  }
+
+  function focusFirstFieldForStep(nextStep: Step) {
+    window.setTimeout(() => {
+      if (nextStep === 2) {
+        nameInputRef.current?.focus();
+        return;
+      }
+
+      if (nextStep === 3) {
+        const firstSelect = document.querySelector("select") as HTMLSelectElement | null;
+        firstSelect?.focus();
+      }
+    }, 120);
+  }
+
   function next() {
     setBannerMsg(null);
-    setStep((s) => (s < 3 ? ((s + 1) as Step) : s));
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setStep((prev) => {
+      const nextStep = prev < 3 ? ((prev + 1) as Step) : prev;
+      focusFirstFieldForStep(nextStep);
+      return nextStep;
+    });
   }
 
   function back() {
     setBannerMsg(null);
-    setStep((s) => (s > 1 ? ((s - 1) as Step) : s));
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setStep((prev) => (prev > 1 ? ((prev - 1) as Step) : prev));
   }
+
+  React.useEffect(() => {
+    const target =
+      step === 1 ? stepOneRef.current : step === 2 ? stepTwoRef.current : stepThreeRef.current;
+
+    const t = window.setTimeout(() => {
+      scrollFormIntoView(target);
+    }, 80);
+
+    return () => window.clearTimeout(t);
+  }, [step]);
 
   async function ensurePaddleInitialized() {
     if (!paddleReady) {
@@ -541,8 +678,7 @@ export default function WaitlistPage() {
     }
 
     const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      (typeof window !== "undefined" ? window.location.origin : "");
+      process.env.NEXT_PUBLIC_APP_URL || (typeof window !== "undefined" ? window.location.origin : "");
 
     window.Paddle.Checkout.open({
       transactionId,
@@ -574,7 +710,8 @@ export default function WaitlistPage() {
 
     const first = Object.keys(e)[0];
     setStep(2);
-    setTimeout(() => {
+
+    window.setTimeout(() => {
       scrollToId(
         first === "name"
           ? "fld-name"
@@ -584,7 +721,7 @@ export default function WaitlistPage() {
           ? "fld-country"
           : "fld-whatsapp"
       );
-    }, 60);
+    }, 80);
 
     return "Please fix the highlighted fields.";
   }
@@ -603,7 +740,6 @@ export default function WaitlistPage() {
       business: business.trim() || undefined,
       email: email.trim(),
       whatsapp: whatsapp?.trim() || undefined,
-
       country: countryIso2 || undefined,
       region,
       monthlyOrders,
@@ -612,9 +748,7 @@ export default function WaitlistPage() {
       biggestPain,
       notes: notes.trim() || undefined,
       tier,
-
       provider: provider || undefined,
-
       plan: intent === "founder" ? "founder_annual" : "waitlist",
     };
 
@@ -631,7 +765,7 @@ export default function WaitlistPage() {
       if (!r.ok) throw new Error(data?.error || "Failed to submit");
 
       if (intent === "waitlist") {
-        window.location.href = "/thanks";
+        router.push("/thanks", { scroll: false });
         return;
       }
 
@@ -658,7 +792,9 @@ export default function WaitlistPage() {
 
       if (cd?.provider === "paddle") {
         if (!paddleReady) {
-          throw new Error("Paddle checkout is not configured yet. Please join the founder list and we’ll notify you as soon as checkout is live.");
+          throw new Error(
+            "Paddle checkout is not configured yet. Please join the founder list and we’ll notify you as soon as checkout is live."
+          );
         }
 
         if (!cd?.transactionId) {
@@ -674,66 +810,32 @@ export default function WaitlistPage() {
     } catch (e: any) {
       setBannerMsg(e?.message || "Something went wrong.");
       setBusy(false);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      scrollFormIntoView(formCardRef.current);
     }
   }
-
-  const selectStyles = React.useMemo(() => {
-    return {
-      control: (base: any, state: any) => ({
-        ...base,
-        borderRadius: 18,
-        borderColor: errors.country ? "#dc2626" : state.isFocused ? "rgba(0,0,0,0.18)" : "rgba(0,0,0,0.10)",
-        boxShadow: state.isFocused ? "0 0 0 4px rgba(59,130,246,0.08)" : "none",
-        padding: "4px 6px",
-        minHeight: 50,
-        backgroundColor: "white",
-      }),
-      menu: (base: any) => ({
-        ...base,
-        borderRadius: 18,
-        overflow: "hidden",
-        boxShadow: "0 20px 44px rgba(0,0,0,0.14)",
-        border: "1px solid rgba(0,0,0,0.08)",
-        background: "white",
-      }),
-      option: (base: any, state: any) => ({
-        ...base,
-        backgroundColor: state.isSelected ? "rgba(59,130,246,0.08)" : state.isFocused ? "rgba(59,130,246,0.05)" : "white",
-        color: "rgba(0,0,0,0.88)",
-        padding: "12px 12px",
-        fontWeight: state.isSelected ? 700 : 600,
-      }),
-      placeholder: (base: any) => ({ ...base, color: "rgba(0,0,0,0.40)", fontWeight: 600 }),
-      singleValue: (base: any) => ({ ...base, color: "rgba(0,0,0,0.88)", fontWeight: 700 }),
-      indicatorsContainer: (base: any) => ({ ...base, paddingRight: 8 }),
-    };
-  }, [errors.country]);
-
-  const providerLabel =
-    !provider
-      ? "Select country"
-      : provider === "paystack"
-      ? "Paystack"
-      : paddleReady
-      ? "Paddle"
-      : "Paddle soon";
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#fcfcfd] text-app-ink">
       <AmbientBackground />
 
-      <div className="relative mx-auto max-w-7xl px-4 pt-5 sm:px-6 lg:px-8">
+      <div className="relative mx-auto max-w-7xl px-4 pt-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-4">
-          <a href="/" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3">
             <div className="grid h-11 w-11 place-items-center overflow-hidden rounded-2xl border border-black/10 bg-white shadow-[0_12px_30px_rgba(16,24,40,0.06)]">
-              <Image src="/proova.png" alt="Proova" width={56} height={56} className="h-full w-full object-contain" priority />
+              <Image
+                src="/proova.png"
+                alt="Proova"
+                width={56}
+                height={56}
+                className="h-full w-full object-contain"
+                priority
+              />
             </div>
             <div className="leading-tight">
               <div className="text-sm font-semibold tracking-tight text-app-ink">Proova</div>
               <div className="text-xs text-app-muted">Founder waitlist</div>
             </div>
-          </a>
+          </Link>
 
           <div className="hidden sm:flex items-center gap-3">
             <div className="text-xs text-app-muted">Secure checkout</div>
@@ -743,7 +845,7 @@ export default function WaitlistPage() {
           </div>
         </div>
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-[1.08fr_0.92fr] lg:gap-10 lg:items-start">
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1.08fr_0.92fr] lg:items-start lg:gap-10">
           <div className="relative">
             <div className="inline-flex items-center rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-medium text-app-muted shadow-[0_8px_20px_rgba(16,24,40,0.04)]">
               Revenue proof for WhatsApp, Instagram, and social commerce
@@ -758,11 +860,11 @@ export default function WaitlistPage() {
               influencer, campaign, or source actually drove revenue.
             </p>
 
-            <div className="mt-6">
+            <div className="sticky top-3 z-20 mt-6 rounded-2xl bg-[#fcfcfd]/90 py-2 backdrop-blur supports-[backdrop-filter]:bg-[#fcfcfd]/75 lg:static lg:bg-transparent lg:py-0 lg:backdrop-blur-0">
               <StepPills step={step} />
             </div>
 
-            <div className="mt-7 rounded-[32px] border border-black/8 bg-white p-5 shadow-[0_24px_60px_rgba(16,24,40,0.08)] sm:p-6">
+            <div className="mt-6 rounded-[32px] border border-black/8 bg-white p-5 shadow-[0_24px_60px_rgba(16,24,40,0.08)] sm:p-6">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="max-w-lg">
                   <div className="text-xs font-semibold uppercase tracking-[0.14em] text-app-muted">
@@ -772,7 +874,8 @@ export default function WaitlistPage() {
                     Lock your rate before public pricing starts.
                   </div>
                   <div className="mt-3 text-sm leading-6 text-app-muted">
-                    Early access, direct support, setup help, and your Founder rate stays locked while you stay subscribed.
+                    Early access, direct support, setup help, and your Founder rate stays locked while you stay
+                    subscribed.
                   </div>
                 </div>
 
@@ -798,18 +901,17 @@ export default function WaitlistPage() {
                             {launchAnnualPrice.label}
                           </span>
                         </div>
-                        <div className="text-sm text-app-muted">
-                          ({launchMonthlyPrice.label})
-                        </div>
+                        <div className="text-sm text-app-muted">({launchMonthlyPrice.label})</div>
                       </div>
 
-                      <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 w-fit">
+                      <div className="w-fit rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
                         {savings}
                       </div>
                     </div>
                   ) : (
                     <div className="mt-3 text-sm text-app-muted">
-                      Select your country on the form to reveal your exact Founder price, after-launch price, and savings.
+                      Select your country on the form to reveal your exact Founder price, after-launch price, and
+                      savings.
                     </div>
                   )}
                 </div>
@@ -844,7 +946,10 @@ export default function WaitlistPage() {
             </div>
           </div>
 
-          <Card className="rounded-[32px] border border-black/8 bg-white p-5 shadow-[0_28px_70px_rgba(16,24,40,0.10)] sm:p-6">
+          <Card
+            ref={formCardRef}
+            className="rounded-[32px] border border-black/8 bg-white p-5 shadow-[0_28px_70px_rgba(16,24,40,0.10)] sm:p-6"
+          >
             <div className="flex items-start justify-between gap-4">
               <div>
                 <div className="text-sm font-semibold text-app-ink">Join Proova</div>
@@ -852,41 +957,52 @@ export default function WaitlistPage() {
               </div>
 
               <div className="grid h-11 w-11 place-items-center overflow-hidden rounded-2xl border border-black/10 bg-white shadow-[0_8px_20px_rgba(16,24,40,0.04)]">
-                <Image src="/proova.png" alt="Proova" width={56} height={56} className="h-full w-full object-contain" priority />
+                <Image
+                  src="/proova.png"
+                  alt="Proova"
+                  width={56}
+                  height={56}
+                  className="h-full w-full object-contain"
+                  priority
+                />
               </div>
             </div>
 
-            {bannerMsg ? (
-              <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">
-                {bannerMsg}
-              </div>
-            ) : null}
+            <div className="mt-4 min-h-[56px]">
+              {bannerMsg ? (
+                <div className="rounded-2xl border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700">
+                  {bannerMsg}
+                </div>
+              ) : null}
+            </div>
 
-            <div className="mt-5 space-y-5">
+            <div className="mt-3 space-y-5">
               {step === 1 ? (
-                <>
+                <div ref={stepOneRef} className="scroll-mt-24">
                   <div className="text-sm font-semibold text-app-ink">Choose your path</div>
 
-                  <Segmented
-                    value={plan}
-                    onChange={(v) => setPlan(v as Plan)}
-                    items={[
-                      {
-                        value: "waitlist",
-                        title: "Free waitlist",
-                        desc: "Get invited when beta opens. No payment today.",
-                      },
-                      {
-                        value: "founder",
-                        title: "Founder access",
-                        desc: "Priority onboarding, locked annual pricing, and direct support.",
-                        badge: "Limited",
-                      },
-                    ]}
-                  />
+                  <div className="mt-5">
+                    <Segmented
+                      value={plan}
+                      onChange={(v) => setPlan(v as Plan)}
+                      items={[
+                        {
+                          value: "waitlist",
+                          title: "Free waitlist",
+                          desc: "Get invited when beta opens. No payment today.",
+                        },
+                        {
+                          value: "founder",
+                          title: "Founder access",
+                          desc: "Priority onboarding, locked annual pricing, and direct support.",
+                          badge: "Limited",
+                        },
+                      ]}
+                    />
+                  </div>
 
                   {plan === "founder" ? (
-                    <div className="overflow-hidden rounded-[28px] border border-black/8 bg-[#fbfbfc] shadow-[0_12px_30px_rgba(16,24,40,0.05)]">
+                    <div className="mt-5 overflow-hidden rounded-[28px] border border-black/8 bg-[#fbfbfc] shadow-[0_12px_30px_rgba(16,24,40,0.05)]">
                       <div className="p-4">
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                           <div>
@@ -946,8 +1062,10 @@ export default function WaitlistPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="rounded-[28px] border border-black/8 bg-[#fbfbfc] p-4 shadow-[0_12px_30px_rgba(16,24,40,0.04)]">
-                      <div className="text-xs font-semibold uppercase tracking-[0.14em] text-app-muted">Free waitlist</div>
+                    <div className="mt-5 rounded-[28px] border border-black/8 bg-[#fbfbfc] p-4 shadow-[0_12px_30px_rgba(16,24,40,0.04)]">
+                      <div className="text-xs font-semibold uppercase tracking-[0.14em] text-app-muted">
+                        Free waitlist
+                      </div>
                       <ul className="mt-3 grid gap-2 text-sm text-app-muted">
                         <li>• Early access invite when beta opens</li>
                         <li>• Product updates and launch announcements</li>
@@ -956,7 +1074,7 @@ export default function WaitlistPage() {
                     </div>
                   )}
 
-                  <div className="pt-2">
+                  <div className="sticky bottom-0 z-20 -mx-5 mt-5 border-t border-black/8 bg-white/95 px-5 pb-5 pt-4 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:pb-0 sm:pt-2">
                     <PrimaryButton
                       onClick={() => {
                         clearErrors();
@@ -974,171 +1092,188 @@ export default function WaitlistPage() {
                       You can switch between Free and Founder anytime before checkout.
                     </div>
                   </div>
-                </>
+                </div>
               ) : null}
 
               {step === 2 ? (
-                <>
+                <div ref={stepTwoRef} className="scroll-mt-24">
                   <div className="text-sm font-semibold text-app-ink">Contact details</div>
 
-                  <div id="fld-name">
-                    <Field label="Name" error={errors.name}>
-                      <Input
-                        value={name}
-                        onChange={(e) => {
-                          setName(e.target.value);
-                          if (errors.name) setFieldError("name", null);
-                        }}
-                        placeholder="Your name"
-                        className={cx(errors.name ? "ring-2 ring-red-200 border-red-200" : "")}
-                      />
-                    </Field>
-                  </div>
-
-                  <div id="fld-email">
-                    <Field label="Email (required)" hint="We send your invite here" error={errors.email}>
-                      <Input
-                        value={email}
-                        onChange={(e) => {
-                          setEmail(e.target.value);
-                          if (errors.email) setFieldError("email", null);
-                        }}
-                        placeholder="you@company.com"
-                        type="email"
-                        className={cx(errors.email ? "ring-2 ring-red-200 border-red-200" : "")}
-                      />
-                    </Field>
-                  </div>
-
-                  <div id="fld-country">
-                    <Field
-                      label="Country"
-                      hint={plan === "founder" ? "Required for Founder checkout" : "Optional for free waitlist"}
-                      error={errors.country}
-                    >
-                      <ReactSelect
-                        instanceId="country"
-                        value={countryIso2 ? countryOptions.find((o) => o.value === countryIso2) : null}
-                        onChange={(opt: any) => {
-                          const v = opt?.value || "";
-                          setCountryIso2(v);
-                          if (errors.country) setFieldError("country", null);
-                        }}
-                        options={countryOptions as any}
-                        placeholder="Search your country…"
-                        isClearable
-                        isSearchable
-                        styles={selectStyles as any}
-                        formatOptionLabel={(opt: any) => (
-                          <div className="flex items-center justify-between">
-                            <span className="font-semibold">{opt.label}</span>
-                            <span className="text-xs opacity-60">+{opt.meta?.calling}</span>
-                          </div>
-                        )}
-                      />
-                    </Field>
-                  </div>
-
-                  <div id="fld-whatsapp">
-                    <Field
-                      label="WhatsApp (recommended)"
-                      hint="Faster onboarding + updates"
-                      error={errors.whatsapp}
-                    >
-                      <div
-                        className={cx(
-                          "rounded-2xl border bg-white px-3 py-2 shadow-[0_8px_20px_rgba(16,24,40,0.03)]",
-                          errors.whatsapp ? "border-red-200 ring-2 ring-red-200" : "border-black/10"
-                        )}
-                      >
-                        <PhoneInput
-                          international
-                          defaultCountry={(countryIso2 || "NG") as any}
-                          value={whatsapp}
-                          onChange={(v) => {
-                            setWhatsapp(v || "");
-                            if (errors.whatsapp) setFieldError("whatsapp", null);
+                  <div className="mt-5 space-y-5">
+                    <div id="fld-name">
+                      <Field label="Name" error={errors.name}>
+                        <Input
+                          ref={nameInputRef}
+                          value={name}
+                          onChange={(e) => {
+                            setName(e.target.value);
+                            if (errors.name) setFieldError("name", null);
                           }}
-                          placeholder="Enter WhatsApp number"
+                          placeholder="Your name"
+                          autoComplete="name"
+                          className={cx(errors.name ? "border-red-200 ring-2 ring-red-200" : "")}
                         />
-                      </div>
-                      <div className="mt-2 text-xs text-app-muted">
-                        This helps us confirm onboarding and reach you faster.
-                      </div>
-                    </Field>
-                  </div>
+                      </Field>
+                    </div>
 
-                  {plan === "founder" && hasCountry ? (
-                    <div className="overflow-hidden rounded-[28px] border border-black/8 bg-[#fbfbfc] shadow-[0_12px_30px_rgba(16,24,40,0.05)]">
-                      <div className="p-4">
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                          <div>
-                            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-app-muted">
-                              Checkout preview
-                            </div>
-                            <div className="mt-1 text-lg font-semibold text-app-ink">{checkoutSummary.label}</div>
-                            <div className="mt-1 text-xs text-app-muted">{checkoutSummary.sub}</div>
+                    <div id="fld-email">
+                      <Field label="Email (required)" hint="We send your invite here" error={errors.email}>
+                        <Input
+                          value={email}
+                          onChange={(e) => {
+                            setEmail(e.target.value);
+                            if (errors.email) setFieldError("email", null);
+                          }}
+                          placeholder="you@company.com"
+                          type="email"
+                          inputMode="email"
+                          autoComplete="email"
+                          className={cx(errors.email ? "border-red-200 ring-2 ring-red-200" : "")}
+                        />
+                      </Field>
+                    </div>
 
-                            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-app-muted">
-                              <span>After launch:</span>
-                              <span className="font-semibold text-app-ink line-through decoration-black/25">
-                                {launchAnnualPrice.label}
-                              </span>
-                              <span>({launchMonthlyPrice.label})</span>
+                    <div id="fld-country">
+                      <Field
+                        label="Country"
+                        hint={plan === "founder" ? "Required for Founder checkout" : "Optional for free waitlist"}
+                        error={errors.country}
+                      >
+                        <ReactSelect
+                          instanceId="country"
+                          value={countryIso2 ? countryOptions.find((o) => o.value === countryIso2) : null}
+                          onChange={(opt: any) => {
+                            const v = opt?.value || "";
+                            setCountryIso2(v);
+                            if (errors.country) setFieldError("country", null);
+                          }}
+                          options={countryOptions as any}
+                          placeholder="Search your country…"
+                          isClearable
+                          isSearchable
+                          styles={selectStyles as any}
+                          menuPosition="fixed"
+                          formatOptionLabel={(opt: any) => (
+                            <div className="flex items-center justify-between gap-3">
+                              <span className="font-semibold">{opt.label}</span>
+                              <span className="text-xs opacity-60">+{opt.meta?.calling}</span>
                             </div>
-                          </div>
+                          )}
+                        />
+                      </Field>
+                    </div>
 
-                          <div className="grid gap-2 sm:justify-items-end">
-                            <div className="rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-semibold text-app-ink">
-                              {provider === "paystack" ? "Paystack" : paddleReady ? "Paddle" : "Paddle soon"}
+                    <div id="fld-whatsapp">
+                      <Field label="WhatsApp (recommended)" hint="Faster onboarding + updates" error={errors.whatsapp}>
+                        <div
+                          className={cx(
+                            "rounded-2xl border bg-white px-3 py-2 shadow-[0_8px_20px_rgba(16,24,40,0.03)]",
+                            errors.whatsapp ? "border-red-200 ring-2 ring-red-200" : "border-black/10"
+                          )}
+                        >
+                          <PhoneInput
+                            international
+                            defaultCountry={(countryIso2 || "NG") as any}
+                            value={whatsapp}
+                            onChange={(v) => {
+                              setWhatsapp(v || "");
+                              if (errors.whatsapp) setFieldError("whatsapp", null);
+                            }}
+                            placeholder="Enter WhatsApp number"
+                          />
+                        </div>
+                        <div className="mt-2 text-xs text-app-muted">
+                          This helps us confirm onboarding and reach you faster.
+                        </div>
+                      </Field>
+                    </div>
+
+                    {plan === "founder" && hasCountry ? (
+                      <div className="overflow-hidden rounded-[28px] border border-black/8 bg-[#fbfbfc] shadow-[0_12px_30px_rgba(16,24,40,0.05)]">
+                        <div className="p-4">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-app-muted">
+                                Checkout preview
+                              </div>
+                              <div className="mt-1 text-lg font-semibold text-app-ink">{checkoutSummary.label}</div>
+                              <div className="mt-1 text-xs text-app-muted">{checkoutSummary.sub}</div>
+
+                              <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-app-muted">
+                                <span>After launch:</span>
+                                <span className="font-semibold text-app-ink line-through decoration-black/25">
+                                  {launchAnnualPrice.label}
+                                </span>
+                                <span>({launchMonthlyPrice.label})</span>
+                              </div>
                             </div>
-                            <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700">
-                              {savings}
+
+                            <div className="grid gap-2 sm:justify-items-end">
+                              <div className="rounded-full border border-black/10 bg-white px-3 py-1.5 text-xs font-semibold text-app-ink">
+                                {provider === "paystack" ? "Paystack" : paddleReady ? "Paddle" : "Paddle soon"}
+                              </div>
+                              <div className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700">
+                                {savings}
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ) : null}
+                    ) : null}
 
-                  <Field label="Business (optional)">
-                    <Input value={business} onChange={(e) => setBusiness(e.target.value)} placeholder="Brand / store name" />
-                  </Field>
+                    <Field label="Business (optional)">
+                      <Input
+                        value={business}
+                        onChange={(e) => setBusiness(e.target.value)}
+                        placeholder="Brand / store name"
+                        autoComplete="organization"
+                      />
+                    </Field>
 
-                  <div className="rounded-[28px] border border-black/8 bg-[#fbfbfc] p-4 shadow-[0_12px_30px_rgba(16,24,40,0.04)]">
-                    <div className="text-xs font-semibold uppercase tracking-[0.14em] text-app-muted">Why we ask this</div>
-                    <div className="mt-2 text-sm leading-6 text-app-muted">
-                      We onboard in small batches. These details help us prioritise businesses that are ready to
-                      measure ROI clearly.
+                    <div className="rounded-[28px] border border-black/8 bg-[#fbfbfc] p-4 shadow-[0_12px_30px_rgba(16,24,40,0.04)]">
+                      <div className="text-xs font-semibold uppercase tracking-[0.14em] text-app-muted">
+                        Why we ask this
+                      </div>
+                      <div className="mt-2 text-sm leading-6 text-app-muted">
+                        We onboard in small batches. These details help us prioritise businesses that are ready to
+                        measure ROI clearly.
+                      </div>
                     </div>
                   </div>
 
-                  <div className="flex gap-2 pt-1">
-                    <SecondaryButton onClick={back} disabled={busy}>
-                      Back
-                    </SecondaryButton>
-                    <PrimaryButton
-                      disabled={busy}
-                      onClick={() => {
-                        clearErrors();
-                        const err = validateContact(plan);
-                        if (err) return setBannerMsg(err);
-                        next();
-                      }}
-                    >
-                      Continue
-                    </PrimaryButton>
+                  <div className="sticky bottom-0 z-20 -mx-5 mt-5 border-t border-black/8 bg-white/95 px-5 pb-5 pt-4 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:pb-0 sm:pt-2">
+                    <div className="flex gap-2">
+                      <SecondaryButton onClick={back} disabled={busy}>
+                        Back
+                      </SecondaryButton>
+                      <PrimaryButton
+                        disabled={busy}
+                        onClick={() => {
+                          clearErrors();
+                          const err = validateContact(plan);
+                          if (err) {
+                            setBannerMsg(err);
+                            return;
+                          }
+                          next();
+                        }}
+                      >
+                        Continue
+                      </PrimaryButton>
+                    </div>
                   </div>
-                </>
+                </div>
               ) : null}
 
               {step === 3 ? (
-                <>
+                <div ref={stepThreeRef} className="scroll-mt-24">
                   <div className="text-sm font-semibold text-app-ink">Review & finish</div>
 
-                  <div className="grid gap-3">
+                  <div className="mt-5 grid gap-3">
                     <div className="rounded-[28px] border border-black/8 bg-[#fbfbfc] p-4 shadow-[0_12px_30px_rgba(16,24,40,0.04)]">
-                      <div className="text-xs font-semibold uppercase tracking-[0.14em] text-app-muted">Selected plan</div>
+                      <div className="text-xs font-semibold uppercase tracking-[0.14em] text-app-muted">
+                        Selected plan
+                      </div>
                       <div className="mt-1 text-sm font-semibold text-app-ink">
                         {plan === "founder" ? "Founder access" : "Free waitlist"}
                       </div>
@@ -1146,7 +1281,8 @@ export default function WaitlistPage() {
                       {plan === "founder" ? (
                         <div className="mt-2 space-y-1 text-sm text-app-muted">
                           <div>
-                            {checkoutSummary.label} • Pay via {provider === "paystack" ? "Paystack" : paddleReady ? "Paddle" : "Paddle soon"}
+                            {checkoutSummary.label} • Pay via{" "}
+                            {provider === "paystack" ? "Paystack" : paddleReady ? "Paddle" : "Paddle soon"}
                           </div>
                           {hasCountry ? (
                             <div>
@@ -1219,34 +1355,38 @@ export default function WaitlistPage() {
                     By continuing, you agree to receive onboarding updates. No spam.
                   </div>
 
-                  <div className="flex gap-2 pt-2">
-                    <SecondaryButton onClick={back} disabled={busy}>
-                      Back
-                    </SecondaryButton>
-                    <PrimaryButton onClick={() => submit(plan)} disabled={busy}>
-                      {busy
-                        ? plan === "founder"
-                          ? "Opening checkout..."
-                          : "Submitting..."
-                        : plan === "founder"
-                        ? "Proceed to secure checkout"
-                        : "Join waitlist"}
-                    </PrimaryButton>
+                  <div className="sticky bottom-0 z-20 -mx-5 mt-5 border-t border-black/8 bg-white/95 px-5 pb-5 pt-4 backdrop-blur sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:px-0 sm:pb-0 sm:pt-2">
+                    <div className="flex gap-2">
+                      <SecondaryButton onClick={back} disabled={busy}>
+                        Back
+                      </SecondaryButton>
+                      <PrimaryButton onClick={() => submit(plan)} disabled={busy}>
+                        {busy
+                          ? plan === "founder"
+                            ? "Opening checkout..."
+                            : "Submitting..."
+                          : plan === "founder"
+                          ? "Proceed to secure checkout"
+                          : "Join waitlist"}
+                      </PrimaryButton>
+                    </div>
+
+                    <div className="mt-3">
+                      <TrustRow />
+                    </div>
                   </div>
 
-                  <div className="mt-3">
-                    <TrustRow />
-                  </div>
-
-                  <div className="rounded-[28px] border border-black/8 bg-[#fbfbfc] p-4 shadow-[0_12px_30px_rgba(16,24,40,0.04)]">
-                    <div className="text-xs font-semibold uppercase tracking-[0.14em] text-app-muted">What happens next</div>
+                  <div className="mt-4 rounded-[28px] border border-black/8 bg-[#fbfbfc] p-4 shadow-[0_12px_30px_rgba(16,24,40,0.04)]">
+                    <div className="text-xs font-semibold uppercase tracking-[0.14em] text-app-muted">
+                      What happens next
+                    </div>
                     <div className="mt-2 text-sm leading-6 text-app-muted">
                       {plan === "founder"
                         ? "You’ll be redirected to secure checkout. After payment, you’ll receive Founder confirmation and a link to book your onboarding call."
                         : "We’ll reach out before beta opens. Founder users get priority onboarding and locked pricing."}
                     </div>
                   </div>
-                </>
+                </div>
               ) : null}
             </div>
           </Card>
