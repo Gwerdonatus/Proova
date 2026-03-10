@@ -56,27 +56,27 @@ const CLIPS: Clip[] = [
   },
 ];
 
-function VideoCard({ clip }: { clip: Clip }) {
+function VideoItem({ clip }: { clip: Clip }) {
   const embedUrl = getYouTubeEmbedUrl(clip.youtube);
 
   return (
-    <article className="rounded-[28px] border border-app-border bg-white p-4 shadow-soft sm:p-5">
+    <div className="py-5 first:pt-0 last:pb-0 lg:rounded-[28px] lg:border lg:border-app-border lg:bg-white lg:p-4 lg:shadow-soft">
       <div className="flex items-start justify-between gap-3">
-        <div>
-          <h3 className="text-sm font-semibold text-app-ink sm:text-[15px]">
+        <div className="min-w-0">
+          <h3 className="text-[16px] font-semibold leading-5 text-app-ink lg:text-[15px]">
             {clip.title}
           </h3>
-          <p className="mt-1.5 text-sm leading-6 text-app-muted">
+          <p className="mt-1.5 text-[14px] leading-6 text-app-muted lg:text-sm">
             {clip.desc}
           </p>
         </div>
 
-        <div className="shrink-0 rounded-full border border-app-border bg-white px-3 py-1 text-[11px] font-semibold text-app-muted shadow-soft">
+        <div className="shrink-0 rounded-full bg-[#F6F1E8] px-3 py-1 text-[11px] font-semibold text-app-muted lg:border lg:border-app-border">
           Explainer
         </div>
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-[24px] border border-app-border bg-[#0D0D0D] shadow-[0_14px_40px_rgba(0,0,0,0.10)]">
+      <div className="mt-4 overflow-hidden rounded-[20px] bg-[#0D0D0D] shadow-[0_14px_40px_rgba(0,0,0,0.10)] lg:rounded-[24px]">
         <div className="border-b border-white/10 bg-white/[0.05] px-4 py-3">
           <div className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-full bg-white/60" />
@@ -106,30 +106,33 @@ function VideoCard({ clip }: { clip: Clip }) {
           )}
         </div>
       </div>
-    </article>
+    </div>
   );
 }
 
 export function VideoShorts() {
   return (
-    <div className="rounded-[32px] border border-app-border bg-white/65 p-5 shadow-soft backdrop-blur sm:p-7">
-      <div className="flex items-center gap-2">
-        <FiPlay className="h-4 w-4 text-app-ink" />
-        <div>
-          <div className="text-sm font-semibold text-app-ink sm:text-[15px]">
+    <section className="rounded-[24px] border border-app-border bg-white p-4 shadow-soft sm:p-5 lg:rounded-[32px] lg:bg-white/65 lg:p-7 lg:backdrop-blur">
+      <div className="flex items-start gap-3">
+        <div className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-app-border bg-[#FAF7F2]">
+          <FiPlay className="h-4 w-4 text-app-ink" />
+        </div>
+
+        <div className="min-w-0">
+          <div className="text-[20px] font-semibold leading-tight text-app-ink sm:text-[18px] lg:text-[15px]">
             Short explainer videos
           </div>
-          <div className="mt-1 text-xs leading-5 text-app-muted sm:text-[13px]">
+          <div className="mt-1.5 max-w-2xl text-[14px] leading-6 text-app-muted sm:text-[13px] lg:text-[13px]">
             Quick answers to the most important parts of the product.
           </div>
         </div>
       </div>
 
-      <div className="mt-5 grid gap-4 lg:grid-cols-3">
+      <div className="mt-5 divide-y divide-app-border lg:mt-6 lg:grid lg:grid-cols-3 lg:gap-4 lg:divide-y-0">
         {CLIPS.map((clip) => (
-          <VideoCard key={clip.title} clip={clip} />
+          <VideoItem key={clip.title} clip={clip} />
         ))}
       </div>
-    </div>
+    </section>
   );
 }

@@ -396,17 +396,17 @@ export function SiteFooter() {
                   <ColumnTitle>Contact</ColumnTitle>
                   <div className="mt-4 flex flex-col gap-3.5">
                     <FooterExternalLink
-                      href="https://x.com/proverapp"
+                      href="https://x.com/proovaapp"
                       icon={<XIcon className="h-4 w-4" />}
                     >
-                      @proverapp
+                      @proovaapp
                     </FooterExternalLink>
 
                     <FooterExternalLink
-                      href="mailto:proverapp@outlook.com"
+                      href="mailto:proovaconnect@outlook.com"
                       icon={<MailIcon className="h-4 w-4" />}
                     >
-                      proverapp@outlook.com
+                      proovaapp@outlook.com
                     </FooterExternalLink>
                   </div>
                 </div>
