@@ -1,0 +1,30 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{
+  color-scheme: light;
+}
+
+html, body{
+  height: 100%;
+}
+
+body{
+  background: theme(colors.app.bg);
+  color: theme(colors.app.ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+a { color: inherit; }
+
+::selection{
+  background: rgba(139, 90, 43, 0.18);
+}
+
+/* Slightly nicer focus outlines for keyboard users */
+:focus-visible{
+  outline: none;
+}
