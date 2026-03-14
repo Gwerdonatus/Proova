@@ -30,7 +30,10 @@ export default function LandingPage() {
         onViewPricing={goWaitlist}
       />
 
+      {/* How Proova Works */}
       <HowItWorksSection />
+
+      {/* Existing Q&A / reasoning section */}
       <OffsiteProofSection />
 
       <div className="h-24 md:hidden" />
