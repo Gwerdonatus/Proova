@@ -37,9 +37,12 @@ export async function POST(req: Request) {
       intent,
       ...safeLead,
       receivedAt: new Date().toISOString(),
+      hasResendKey: !!process.env.RESEND_API_KEY,
+      notifyEmail: process.env.WAITLIST_NOTIFY_EMAIL || null,
+      fromEmail: process.env.WAITLIST_FROM_EMAIL || null,
     });
 
-    await notifyWaitlistSignup({
+    const mailResult = await notifyWaitlistSignup({
       name: safeLead.name,
       email: safeLead.email,
       business: safeLead.business,
@@ -54,6 +57,11 @@ export async function POST(req: Request) {
       channel: safeLead.channel,
       biggestPain: safeLead.biggestPain,
       notes: safeLead.notes,
+    });
+
+    console.log("Waitlist notification sent:", {
+      id: mailResult?.data?.id || null,
+      error: mailResult?.error || null,
     });
 
     return NextResponse.json({ ok: true });

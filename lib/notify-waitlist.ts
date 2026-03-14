@@ -32,7 +32,7 @@ export async function notifyWaitlistSignup(input: NotifyWaitlistInput) {
 
   const html = `
     <div style="font-family: Arial, sans-serif; color: #111827; line-height: 1.6;">
-      <h2 style="margin: 0 0 16px;">${subject}</h2>
+      <h2 style="margin: 0 0 16px;">${escapeHtml(subject)}</h2>
       <table style="border-collapse: collapse; width: 100%; max-width: 720px;">
         <tbody>
           ${row("Name", input.name)}
@@ -54,17 +54,46 @@ export async function notifyWaitlistSignup(input: NotifyWaitlistInput) {
     </div>
   `;
 
-  const { error } = await resend.emails.send({
+  const text = [
+    subject,
+    "",
+    `Name: ${input.name}`,
+    `Email: ${input.email}`,
+    input.business ? `Business: ${input.business}` : "",
+    input.whatsapp ? `WhatsApp: ${input.whatsapp}` : "",
+    input.country ? `Country: ${input.country}` : "",
+    input.region ? `Region: ${input.region}` : "",
+    input.plan ? `Plan: ${input.plan}` : "",
+    input.tier ? `Tier: ${input.tier}` : "",
+    input.provider ? `Provider: ${input.provider}` : "",
+    input.monthlyOrders ? `Monthly orders: ${input.monthlyOrders}` : "",
+    input.payments ? `Payments: ${input.payments}` : "",
+    input.channel ? `Channel: ${input.channel}` : "",
+    input.biggestPain ? `Biggest pain: ${input.biggestPain}` : "",
+    input.notes ? `Notes: ${input.notes}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  const result = await resend.emails.send({
     from,
-    to,
+    to: [to],
     subject,
     html,
+    text,
     replyTo: input.email,
   });
 
-  if (error) {
-    throw new Error(error.message || "Failed to send notification email");
+  console.log("WAITLIST EMAIL RESULT:", JSON.stringify(result, null, 2));
+
+  if (result.error) {
+    console.error("WAITLIST EMAIL ERROR:", result.error);
+    throw new Error(result.error.message || "Failed to send notification email");
   }
+
+  console.log("WAITLIST EMAIL SENT ID:", result.data?.id);
+
+  return result;
 }
 
 function row(label: string, value?: string) {
