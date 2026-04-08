@@ -403,10 +403,10 @@ export function SiteFooter() {
                     </FooterExternalLink>
 
                     <FooterExternalLink
-                      href="mailto:proovaconnect@outlook.com"
+                      href="mailto:hello@proova.app"
                       icon={<MailIcon className="h-4 w-4" />}
                     >
-                      proovaapp@outlook.com
+                      hello@proova.app
                     </FooterExternalLink>
                   </div>
                 </div>

@@ -6,10 +6,9 @@ import Link from "next/link";
 import { FiHome, FiActivity, FiLink2, FiPlay, FiClock } from "react-icons/fi";
 
 import { THEME } from "@/components/tour/TourTheme";
-import { Section, FlowConnector } from "@/components/tour/tour-ui";
+import { Section } from "@/components/tour/tour-ui";
 import { TrustSection } from "@/components/tour/sections/TrustSection";
 import { IntegrationsAndStatus } from "@/components/tour/sections/IntegrationsAndStatus";
-
 import { WhatProovaDoes } from "@/components/tour/sections/WhatProovaDoes";
 import { HowItWorks } from "@/components/tour/sections/HowItWorks";
 import { VideoLongDemo } from "@/components/tour/sections/VideoLongDemo";
@@ -18,10 +17,6 @@ import { ScreenshotSection } from "@/components/tour/sections/ScreenshotSection"
 import { FAQ } from "@/components/tour/sections/FAQ";
 import { TourHero } from "@/components/tour/sections/TourHero";
 
-/**
- * Plain text top nav (replaces JumpBar)
- * Keeps it simple, clean, and easy to use.
- */
 const TOP_NAV = [
   { id: "overview", label: "Overview" },
   { id: "how", label: "How it works" },
@@ -30,15 +25,33 @@ const TOP_NAV = [
   { id: "trust", label: "Security & privacy" },
 ] as const;
 
+function PageShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="w-full max-w-full px-4 sm:px-6 lg:px-8 xl:px-10 2xl:px-14">
+      {children}
+    </div>
+  );
+}
+
+function ContentBand({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return <div className={`w-full max-w-full ${className}`}>{children}</div>;
+}
+
 function TopNav() {
   return (
-    <nav className="mt-6 border-b border-app-border pb-3">
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+    <nav className="mt-6 pb-1">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm sm:text-[15px]">
         {TOP_NAV.map((x) => (
           <a
             key={x.id}
             href={`#${x.id}`}
-            className="font-semibold text-app-muted hover:text-app-ink"
+            className="font-semibold text-app-muted transition-colors hover:text-app-ink"
           >
             {x.label}
           </a>
@@ -50,7 +63,7 @@ function TopNav() {
 
 export default function TourPage() {
   return (
-    <main className="min-h-screen bg-app-bg text-app-ink">
+    <main className="relative isolate min-h-screen w-full max-w-full overflow-x-hidden bg-app-bg text-app-ink">
       {/* Background polish */}
       <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div
@@ -67,11 +80,11 @@ export default function TourPage() {
         />
       </div>
 
-      <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6 lg:px-8">
+      <PageShell>
         {/* Top bar */}
-        <div className="flex items-center justify-between gap-3">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center overflow-hidden rounded-2xl border border-app-border bg-white shadow-soft">
+        <div className="flex items-center justify-between gap-3 pt-5 sm:pt-6">
+          <Link href="/" className="flex min-w-0 items-center gap-3">
+            <div className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-2xl border border-app-border bg-white shadow-soft">
               <Image
                 src="/proova.png"
                 alt="Proova"
@@ -81,8 +94,9 @@ export default function TourPage() {
                 priority
               />
             </div>
-            <div className="leading-tight">
-              <div className="text-sm font-semibold tracking-tight text-app-ink">
+
+            <div className="min-w-0 leading-tight">
+              <div className="truncate text-sm font-semibold tracking-tight text-app-ink">
                 Proova
               </div>
               <div className="text-xs text-app-muted">Tour</div>
@@ -91,85 +105,109 @@ export default function TourPage() {
 
           <Link
             href="/"
-            className="inline-flex items-center gap-2 rounded-full border border-app-border bg-white px-4 py-2 text-xs font-semibold text-app-ink shadow-soft hover:bg-white/80"
+            className="inline-flex shrink-0 items-center gap-2 rounded-full border border-app-border bg-white px-4 py-2 text-xs font-semibold text-app-ink shadow-soft transition hover:bg-white/80"
           >
             <FiHome className="h-4 w-4 text-app-ink" />
             Home
           </Link>
         </div>
 
-        {/* Plain text nav (replaces JumpBar) */}
         <TopNav />
+      </PageShell>
 
-        {/* SECTION 1: Overview */}
-        <div id="overview" className="scroll-mt-24">
-          <TourHero />
+      {/* Overview */}
+      <section id="overview" className="scroll-mt-24 pt-6 sm:pt-8 lg:pt-10">
+        <PageShell>
+          <ContentBand>
+            <TourHero />
+          </ContentBand>
+        </PageShell>
+      </section>
+
+      {/* How it works */}
+      <section id="how" className="scroll-mt-24 pt-12 sm:pt-14 lg:pt-18">
+        <PageShell>
+          <ContentBand>
+            <Section
+              icon={FiActivity}
+              eyebrow="How Proova works"
+              title="Proova measures revenue — across the real buying journey."
+              desc="Whether customers pay on checkout or pay later off-site, Proova ties confirmed money back to where it came from."
+              tone="tinted"
+            >
+              <div className="space-y-10 sm:space-y-12 lg:space-y-14">
+                <WhatProovaDoes />
+                <Section
+                  icon={FiLink2}
+                  title="A simple loop: capture → confirm → report."
+                  desc="No noise. No fake conversions. Clean evidence."
+                >
+                  <HowItWorks />
+                </Section>
+              </div>
+            </Section>
+          </ContentBand>
+        </PageShell>
+      </section>
+
+      {/* Proof */}
+      <section id="proof" className="scroll-mt-24 pt-12 sm:pt-14 lg:pt-18">
+        <PageShell>
+          <ContentBand>
+            <Section
+              icon={FiPlay}
+              eyebrow="Proof & reporting"
+              title="See the workflow and how merchants use it"
+              desc="Watch the demo, then browse short clips and screenshots that explain each screen."
+              tone="tinted"
+            >
+              <div className="space-y-8 sm:space-y-10 lg:space-y-12">
+                <VideoLongDemo />
+                <VideoShorts />
+              </div>
+            </Section>
+          </ContentBand>
+        </PageShell>
+      </section>
+
+      {/* Full-width screenshot area */}
+      <section className="pt-12 sm:pt-14 lg:pt-18">
+        <div className="w-full max-w-full overflow-x-hidden">
+          <ScreenshotSection />
         </div>
+      </section>
 
-        {/* SECTION 2: How it works */}
-        <Section
-          id="how"
-          icon={FiActivity}
-          eyebrow="How Proova works"
-          title="Proova measures revenue — across the real buying journey."
-          desc="Whether customers pay on checkout or pay later off-site, Proova ties confirmed money back to where it came from."
-          tone="tinted"
-        >
-          <WhatProovaDoes />
-          <FlowConnector />
-          <Section
-            icon={FiLink2}
-            title="A simple loop: capture → confirm → report."
-            desc="No noise. No fake conversions. Clean evidence."
-          >
-            <HowItWorks />
-          </Section>
-        </Section>
+      {/* Status */}
+      <section id="status" className="scroll-mt-24 pt-12 sm:pt-14 lg:pt-18">
+        <PageShell>
+          <ContentBand>
+            <Section
+              icon={FiClock}
+              eyebrow="Product status"
+              title="What’s live now vs what’s included at launch."
+              desc="Live today: revenue proof + reconciliation. Included at launch: bank linking, chargebacks, and serious attribution controls."
+              tone="tinted"
+            >
+              <IntegrationsAndStatus />
+            </Section>
+          </ContentBand>
+        </PageShell>
+      </section>
 
-        <FlowConnector />
+      {/* Trust */}
+      <section id="trust" className="scroll-mt-24 pt-12 sm:pt-14 lg:pt-18">
+        <PageShell>
+          <ContentBand>
+            <TrustSection />
+          </ContentBand>
+        </PageShell>
+      </section>
 
-        {/* SECTION 3: Proof & Reporting */}
-        <Section
-          id="proof"
-          icon={FiPlay}
-          eyebrow="Proof & reporting"
-          title="See the workflow and how merchants use it"
-          desc="Watch the demo, then browse short clips and screenshots that explain each screen."
-          tone="tinted"
-        >
-          <VideoLongDemo />
-          <div className="mt-8">
-            <VideoShorts />
-          </div>
-        </Section>
-      </div>
-
-      <ScreenshotSection />
-
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        <FlowConnector />
-
-        {/* SECTION 4: Status & roadmap */}
-        <Section
-          id="status"
-          icon={FiClock}
-          eyebrow="Product status"
-          title="What’s live now vs what’s included at launch."
-          desc="Live today: revenue proof + reconciliation. Included at launch: bank linking, chargebacks, and serious attribution controls."
-          tone="tinted"
-        >
-          <IntegrationsAndStatus />
-        </Section>
-
-        <FlowConnector />
-
-        {/* SECTION 5: Security & privacy */}
-        <div id="trust" className="scroll-mt-24">
-          <TrustSection />
+      <section className="pt-12 sm:pt-14 lg:pt-18">
+        <div className="w-full max-w-full overflow-x-hidden">
+          <FAQ />
         </div>
-      </div>
-
-      <FAQ />
+      </section>
     </main>
   );
 }

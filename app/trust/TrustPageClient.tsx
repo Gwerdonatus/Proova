@@ -3,611 +3,860 @@
 import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  FiShield,
-  FiLock,
-  FiDatabase,
-  FiCheckCircle,
-  FiGlobe,
-  FiFileText,
-  FiAlertTriangle,
-  FiTrash2,
-  FiKey,
-  FiServer,
-  FiHelpCircle,
-  FiExternalLink,
-  FiClock,
-} from "react-icons/fi";
 
 function cx(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
-/**
- * Brand edge gradients:
- * - White base
- * - Multi-tone blues + purples + warm accents
- * - Only subtle color around the edges + light hero glow
- */
-const BRAND = {
-  blueA: "rgba(37, 99, 235, 0.16)",
-  blueB: "rgba(59, 130, 246, 0.14)",
-  blueC: "rgba(96, 165, 250, 0.12)",
+// ─── NAV SECTIONS ─────────────────────────────────────────────────────────────
 
-  purpleA: "rgba(124, 58, 237, 0.16)",
-  purpleB: "rgba(139, 92, 246, 0.14)",
-  purpleC: "rgba(167, 139, 250, 0.12)",
+const NAV_SECTIONS = [
+  { id: "overview", label: "Overview" },
+  { id: "privacy-policy", label: "Privacy Policy" },
+  { id: "data-collection", label: "Data We Collect" },
+  { id: "data-use", label: "How We Use Data" },
+  { id: "data-sharing", label: "Data Sharing" },
+  { id: "your-rights", label: "Your Rights" },
+  { id: "security", label: "Security" },
+  { id: "cookies", label: "Cookies" },
+  { id: "international", label: "International Transfers" },
+  { id: "retention", label: "Data Retention" },
+  { id: "compliance", label: "Compliance" },
+  { id: "contact", label: "Contact Us" },
+];
 
-  pinkA: "rgba(236, 72, 153, 0.12)",
-  orangeA: "rgba(249, 115, 22, 0.12)",
-  yellowA: "rgba(245, 158, 11, 0.10)",
-};
+// ─── PRIMITIVES ───────────────────────────────────────────────────────────────
 
-function Chip({
-  children,
-  tone = "soft",
-}: {
-  children: React.ReactNode;
-  tone?: "soft" | "solid";
-}) {
+function SectionAnchor({ id }: { id: string }) {
+  return <div id={id} className="scroll-mt-32 lg:scroll-mt-28" />;
+}
+
+function Tag({ children }: { children: React.ReactNode }) {
   return (
-    <span
-      className={cx(
-        "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold",
-        "border-app-border",
-        tone === "solid"
-          ? "bg-white text-app-ink shadow-soft"
-          : "bg-white/60 text-app-muted"
-      )}
-    >
+    <span className="inline-flex items-center rounded-full bg-[#F5F5F7] px-3 py-1 text-[11px] font-semibold tracking-wide text-[#6E6E73] uppercase">
       {children}
     </span>
   );
 }
 
-function Section({
-  id,
-  eyebrow,
-  title,
-  desc,
-  icon: Icon,
-  children,
-  tone = "plain",
-}: {
-  id?: string;
-  eyebrow?: string;
-  title: string;
-  desc?: string;
-  icon?: React.ComponentType<{ className?: string }>;
-  children?: React.ReactNode;
-  tone?: "plain" | "tinted";
-}) {
+function Badge({ color, children }: { color: "green" | "blue" | "purple"; children: React.ReactNode }) {
+  const map = {
+    green: "bg-[#E8F5E9] text-[#1B5E20]",
+    blue: "bg-[#E3F2FD] text-[#0D47A1]",
+    purple: "bg-[#F3E8FF] text-[#5B21B6]",
+  };
   return (
-    <section
-      id={id}
-      className={cx(
-        "mt-12 scroll-mt-24",
-        tone === "tinted"
-          ? "rounded-[28px] border border-app-border bg-white/70 p-5 shadow-soft backdrop-blur sm:p-7"
-          : ""
-      )}
-    >
-      <div className="flex items-end justify-between gap-4">
-        <div>
-          {eyebrow ? (
-            <div className="inline-flex items-center gap-2 rounded-full border border-app-border bg-white px-3 py-1 text-xs font-semibold text-app-muted">
-              {Icon ? <Icon className="h-3.5 w-3.5 text-app-ink" /> : null}
-              {eyebrow}
-            </div>
-          ) : null}
-
-          <h2 className="mt-3 text-2xl font-semibold tracking-tight text-app-ink md:text-3xl">
-            {title}
-          </h2>
-
-          {desc ? (
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-app-muted md:text-base">
-              {desc}
-            </p>
-          ) : null}
-        </div>
-      </div>
-
-      {children ? <div className="mt-6">{children}</div> : null}
-    </section>
+    <span className={cx("inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold", map[color])}>
+      {children}
+    </span>
   );
 }
 
-function InfoCard({
-  icon: Icon,
-  title,
-  desc,
-  children,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  desc: string;
-  children?: React.ReactNode;
-}) {
+function Divider() {
+  return <hr className="border-t border-[#E5E5EA] my-8" />;
+}
+
+function PolicyH2({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-3xl border border-app-border bg-white p-5 shadow-soft">
-      <div className="flex items-start gap-3">
-        <div
-          className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-app-border bg-white shadow-soft"
-          aria-hidden="true"
-        >
-          <Icon className="h-[18px] w-[18px] text-app-ink" />
-        </div>
-        <div className="min-w-0">
-          <div className="text-sm font-semibold text-app-ink">{title}</div>
-          <div className="mt-1 text-sm leading-6 text-app-muted">{desc}</div>
-          {children ? <div className="mt-3">{children}</div> : null}
-        </div>
-      </div>
-    </div>
+    <h2 className="mt-10 mb-4 text-[20px] sm:text-[22px] font-semibold tracking-tight text-[#1D1D1F]">
+      {children}
+    </h2>
   );
 }
 
-function BulletList({ items }: { items: string[] }) {
+function PolicyH3({ children }: { children: React.ReactNode }) {
   return (
-    <ul className="space-y-2 text-sm leading-6 text-app-muted">
-      {items.map((x) => (
-        <li key={x} className="flex gap-2">
-          <span className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-black/20" />
-          <span>{x}</span>
+    <h3 className="mt-6 mb-2 text-[15px] sm:text-[16px] font-semibold text-[#1D1D1F]">
+      {children}
+    </h3>
+  );
+}
+
+function PolicyP({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[15px] leading-[1.8] text-[#3D3D3F] mb-4">
+      {children}
+    </p>
+  );
+}
+
+function PolicyList({ items }: { items: (string | React.ReactNode)[] }) {
+  return (
+    <ul className="mb-5 space-y-2 pl-1">
+      {items.map((item, i) => (
+        <li key={i} className="flex gap-3 text-[15px] leading-[1.7] text-[#3D3D3F]">
+          <span className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#0A84FF]" />
+          <span>{item}</span>
         </li>
       ))}
     </ul>
   );
 }
 
-function AnchorNav() {
-  const items = [
-    ["Security controls", "#security"],
-    ["Data & privacy", "#privacy"],
-    ["Compliance posture", "#compliance"],
-    ["Bank linking approach", "#bank-linking"],
-    ["Deletion & exports", "#deletion"],
-  ] as const;
-
+function CalloutBox({ icon, title, children }: { icon: string; title: string; children: React.ReactNode }) {
   return (
-    <div className="mt-6 flex flex-wrap gap-2">
-      {items.map(([label, href]) => (
-        <a
-          key={href}
-          href={href}
-          className="inline-flex items-center rounded-full border border-app-border bg-white px-4 py-2 text-xs font-semibold text-app-ink shadow-soft hover:bg-white/80"
-        >
-          {label}
-        </a>
-      ))}
+    <div className="my-6 rounded-2xl border border-[#E5E5EA] bg-[#F5F5F7] p-4 sm:p-5">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-[18px]">{icon}</span>
+        <span className="text-[14px] font-semibold text-[#1D1D1F]">{title}</span>
+      </div>
+      <div className="text-[14px] leading-[1.75] text-[#3D3D3F]">{children}</div>
     </div>
   );
 }
 
-export default function TrustPageClient() {
+function Card({ icon, title, desc, items }: { icon: string; title: string; desc: string; items?: string[] }) {
   return (
-    <main className="relative min-h-screen bg-white text-app-ink">
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `
-              radial-gradient(900px 540px at 10% 12%, ${BRAND.purpleA}, transparent 60%),
-              radial-gradient(760px 520px at 90% 10%, ${BRAND.blueA}, transparent 62%),
-              radial-gradient(860px 560px at 92% 86%, ${BRAND.purpleB}, transparent 64%),
-              radial-gradient(760px 520px at 10% 92%, ${BRAND.blueB}, transparent 64%),
-              radial-gradient(520px 420px at 55% 92%, ${BRAND.orangeA}, transparent 68%),
-              radial-gradient(520px 420px at 55% 8%, ${BRAND.pinkA}, transparent 70%)
-            `,
-          }}
-        />
+    <div className="rounded-2xl border border-[#E5E5EA] bg-white p-4 sm:p-5 hover:shadow-[0_4px_24px_rgba(0,0,0,0.07)] transition-shadow duration-300">
+      <div className="text-[22px] sm:text-[24px] mb-3">{icon}</div>
+      <div className="text-[15px] font-semibold text-[#1D1D1F] mb-1">{title}</div>
+      <div className="text-[13px] leading-[1.7] text-[#6E6E73]">{desc}</div>
+      {items && (
+        <ul className="mt-3 space-y-1.5">
+          {items.map((item, i) => (
+            <li key={i} className="flex gap-2 text-[13px] leading-[1.6] text-[#3D3D3F]">
+              <span className="mt-[8px] h-1 w-1 shrink-0 rounded-full bg-[#0A84FF]" />
+              <span>{item}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
-        <div
-          className="absolute -top-56 left-[-220px] h-[640px] w-[640px] rounded-full blur-3xl"
-          style={{
-            background: `radial-gradient(circle, ${BRAND.purpleC}, transparent 65%)`,
-          }}
-        />
-        <div
-          className="absolute -top-56 right-[-220px] h-[640px] w-[640px] rounded-full blur-3xl"
-          style={{
-            background: `radial-gradient(circle, ${BRAND.blueC}, transparent 65%)`,
-          }}
-        />
-        <div
-          className="absolute -bottom-64 left-[-260px] h-[700px] w-[700px] rounded-full blur-3xl"
-          style={{
-            background: `radial-gradient(circle, ${BRAND.blueA}, transparent 68%)`,
-          }}
-        />
-        <div
-          className="absolute -bottom-64 right-[-260px] h-[700px] w-[700px] rounded-full blur-3xl"
-          style={{
-            background: `radial-gradient(circle, ${BRAND.purpleA}, transparent 68%)`,
-          }}
-        />
-        <div
-          className="absolute -bottom-72 left-1/2 h-[740px] w-[740px] -translate-x-1/2 rounded-full blur-3xl"
-          style={{
-            background: `radial-gradient(circle, ${BRAND.yellowA}, transparent 68%)`,
-          }}
-        />
+// ─── SCROLLABLE TABLE WRAPPER ──────────────────────────────────────────────────
+
+function TableWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="my-5 overflow-x-auto rounded-2xl border border-[#E5E5EA] -mx-4 sm:mx-0">
+      <div className="min-w-[480px]">
+        {children}
       </div>
+    </div>
+  );
+}
 
-      <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-3">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center overflow-hidden rounded-2xl border border-app-border bg-white shadow-soft">
-              <Image
-                src="/proova.png"
-                alt="Proova"
-                width={56}
-                height={56}
-                className="h-full w-full object-contain"
-                priority
-              />
+// ─── MOBILE NAV PILL ──────────────────────────────────────────────────────────
+
+function MobileNav({ active }: { active: string }) {
+  const [open, setOpen] = React.useState(false);
+  const activeLabel = NAV_SECTIONS.find((s) => s.id === active)?.label ?? "Navigate";
+
+  return (
+    <div className="lg:hidden sticky top-[57px] z-30 bg-white/90 backdrop-blur-xl border-b border-[#E5E5EA] px-4 py-2">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex w-full items-center justify-between rounded-xl border border-[#E5E5EA] bg-[#F5F5F7] px-4 py-2.5 text-[13px] font-medium text-[#1D1D1F]"
+      >
+        <span className="flex items-center gap-2">
+          <span className="text-[#0A84FF]">§</span>
+          {activeLabel}
+        </span>
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 12 12"
+          fill="none"
+          className={cx("transition-transform duration-200", open ? "rotate-180" : "")}
+        >
+          <path d="M2 4L6 8L10 4" stroke="#6E6E73" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </button>
+
+      {open && (
+        <div className="mt-1 rounded-xl border border-[#E5E5EA] bg-white shadow-lg overflow-hidden">
+          {NAV_SECTIONS.map((s) => (
+            <a
+              key={s.id}
+              href={`#${s.id}`}
+              onClick={() => setOpen(false)}
+              className={cx(
+                "block px-4 py-2.5 text-[13px] font-medium border-b border-[#F5F5F7] last:border-0 transition-colors",
+                active === s.id
+                  ? "bg-[#F0F7FF] text-[#0A84FF]"
+                  : "text-[#3D3D3F] hover:bg-[#F5F5F7]"
+              )}
+            >
+              {s.label}
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── SIDEBAR NAV ──────────────────────────────────────────────────────────────
+
+function SidebarNav({ active }: { active: string }) {
+  return (
+    <nav className="sticky top-28 hidden lg:block">
+      <div className="text-[11px] font-semibold uppercase tracking-widest text-[#6E6E73] mb-3 px-3">
+        On this page
+      </div>
+      <ul className="space-y-0.5">
+        {NAV_SECTIONS.map((s) => (
+          <li key={s.id}>
+            <a
+              href={`#${s.id}`}
+              className={cx(
+                "block rounded-lg px-3 py-1.5 text-[13px] font-medium transition-colors duration-150",
+                active === s.id
+                  ? "bg-[#F5F5F7] text-[#0A84FF]"
+                  : "text-[#6E6E73] hover:text-[#1D1D1F]"
+              )}
+            >
+              {s.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+// ─── MAIN PAGE ────────────────────────────────────────────────────────────────
+
+export default function TrustPageClient() {
+  const [activeSection, setActiveSection] = React.useState("overview");
+
+  React.useEffect(() => {
+    const ids = NAV_SECTIONS.map((s) => s.id);
+    const observers = ids.map((id) => {
+      const el = document.getElementById(id);
+      if (!el) return null;
+      const obs = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) setActiveSection(id);
+        },
+        { rootMargin: "-20% 0px -70% 0px" }
+      );
+      obs.observe(el);
+      return obs;
+    });
+    return () => observers.forEach((o) => o?.disconnect());
+  }, []);
+
+  return (
+    <main className="min-h-screen bg-white font-[-apple-system,BlinkMacSystemFont,'SF_Pro_Display','Segoe_UI',sans-serif] text-[#1D1D1F]">
+
+      {/* ── TOP NAV ── */}
+      <header className="sticky top-0 z-40 border-b border-[#E5E5EA] bg-white/80 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-5 py-3 sm:py-4">
+          <Link href="/" className="flex items-center gap-2.5">
+            <div className="grid h-8 w-8 place-items-center overflow-hidden rounded-[10px] border border-[#E5E5EA] bg-white shadow-sm">
+              <Image src="/proova.png" alt="Proova" width={32} height={32} className="h-full w-full object-contain" priority />
             </div>
-            <div className="leading-tight">
-              <div className="text-sm font-semibold tracking-tight text-app-ink">
-                Proova
-              </div>
-              <div className="text-xs text-app-muted">
-                Security • Privacy • Compliance
-              </div>
-            </div>
+            <span className="text-[15px] font-semibold text-[#1D1D1F]">Proova</span>
           </Link>
 
-          <div className="h-10 w-10" aria-hidden="true" />
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Badge color="green">GDPR Ready</Badge>
+            <Badge color="blue">SOC 2 Aligned</Badge>
+          </div>
         </div>
+      </header>
 
-        <section className="mt-10">
-          <div className="relative overflow-hidden rounded-[28px] border border-app-border bg-white/75 p-6 shadow-soft backdrop-blur sm:p-8">
-            <div className="pointer-events-none absolute inset-0 -z-10">
-              <div
-                className="absolute -top-24 left-[12%] h-[340px] w-[340px] rounded-full blur-3xl"
-                style={{
-                  background: `radial-gradient(circle, ${BRAND.blueB}, transparent 70%)`,
-                }}
-              />
-              <div
-                className="absolute -top-20 right-[10%] h-[360px] w-[360px] rounded-full blur-3xl"
-                style={{
-                  background: `radial-gradient(circle, ${BRAND.purpleB}, transparent 72%)`,
-                }}
-              />
-              <div
-                className="absolute -bottom-28 left-[42%] h-[360px] w-[360px] rounded-full blur-3xl"
-                style={{
-                  background: `radial-gradient(circle, ${BRAND.orangeA}, transparent 72%)`,
-                }}
-              />
-            </div>
+      {/* ── MOBILE SECTION NAV ── */}
+      <MobileNav active={activeSection} />
 
-            <div className="flex flex-wrap gap-2">
-              <Chip tone="solid">Trust</Chip>
-              <Chip>Security</Chip>
-              <Chip>Privacy</Chip>
-              <Chip>Compliance posture</Chip>
-            </div>
+      <div className="mx-auto max-w-7xl px-4 sm:px-5">
+        <div className="flex gap-8 lg:gap-12 py-8 lg:py-10">
 
-            <h1 className="mt-5 text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-              Built to earn trust — not ask for it.
-            </h1>
+          {/* ── SIDEBAR ── */}
+          <aside className="w-48 shrink-0 hidden lg:block">
+            <SidebarNav active={activeSection} />
+          </aside>
 
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-app-muted sm:text-base">
-              Proova helps you prove where revenue came from. That only works if merchants are
-              confident about security and data handling. This page describes our approach, the
-              controls we use, and how we think about compliance as we scale globally.
-            </p>
+          {/* ── MAIN CONTENT ── */}
+          <div className="min-w-0 flex-1">
 
-            <div className="mt-6 grid gap-3 md:grid-cols-3">
-              <div className="rounded-3xl border border-app-border bg-white/70 p-4 shadow-soft">
-                <div className="flex items-center gap-2">
-                  <FiShield className="h-4 w-4 text-app-ink" />
-                  <div className="text-sm font-semibold text-app-ink">Minimize data</div>
-                </div>
-                <div className="mt-1 text-sm leading-6 text-app-muted">
-                  We focus on attribution proof and reduce sensitive exposure where possible.
-                </div>
-              </div>
+            {/* ════ HERO ════ */}
+            <SectionAnchor id="overview" />
+            <div className="mb-10 sm:mb-12">
+              <Tag>Trust & Privacy</Tag>
+              <h1 className="mt-4 text-[32px] sm:text-[42px] font-semibold tracking-tight leading-[1.1] text-[#1D1D1F]">
+                Privacy. Security.<br />
+                <span className="text-[#0A84FF]">Built-in.</span>
+              </h1>
+              <p className="mt-4 max-w-2xl text-[15px] sm:text-[17px] leading-[1.7] text-[#6E6E73]">
+                Proova is a revenue attribution platform. We earn trust by handling your data responsibly,
+                maintaining strong security practices, and being transparent about everything we do with your information.
+              </p>
 
-              <div className="rounded-3xl border border-app-border bg-white/70 p-4 shadow-soft">
-                <div className="flex items-center gap-2">
-                  <FiLock className="h-4 w-4 text-app-ink" />
-                  <div className="text-sm font-semibold text-app-ink">Protect access</div>
-                </div>
-                <div className="mt-1 text-sm leading-6 text-app-muted">
-                  Secrets and integrations are treated as sensitive and handled carefully.
-                </div>
-              </div>
-
-              <div className="rounded-3xl border border-app-border bg-white/70 p-4 shadow-soft">
-                <div className="flex items-center gap-2">
-                  <FiTrash2 className="h-4 w-4 text-app-ink" />
-                  <div className="text-sm font-semibold text-app-ink">Control</div>
-                </div>
-                <div className="mt-1 text-sm leading-6 text-app-muted">
-                  Export data and request deletion of your workspace when needed.
-                </div>
+              {/* Section pill links — hidden on very small screens, shown as scrollable row */}
+              <div className="mt-6 hidden sm:flex flex-wrap gap-2">
+                {NAV_SECTIONS.slice(1).map((s) => (
+                  <a
+                    key={s.id}
+                    href={`#${s.id}`}
+                    className="inline-flex items-center rounded-full border border-[#E5E5EA] bg-white px-3.5 py-1.5 text-[12px] font-medium text-[#1D1D1F] hover:bg-[#F5F5F7] transition-colors"
+                  >
+                    {s.label}
+                  </a>
+                ))}
               </div>
             </div>
 
-            <AnchorNav />
-          </div>
-        </section>
+            {/* ── TRUST PILLARS ── */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-10 sm:mb-12">
+              {[
+                { icon: "🔒", title: "Data Minimization", desc: "We collect only what's necessary to deliver attribution. Nothing more." },
+                { icon: "🛡️", title: "No Data Selling", desc: "Your data is never sold, rented, or traded to third parties — ever." },
+                { icon: "⚙️", title: "You're in Control", desc: "Export, update, or delete your data at any time, no questions asked." },
+              ].map((p) => (
+                <div key={p.title} className="rounded-2xl border border-[#E5E5EA] bg-[#F5F5F7] p-4 sm:p-5 flex sm:block gap-4 items-start">
+                  <div className="text-[26px] sm:text-[28px] sm:mb-3 shrink-0">{p.icon}</div>
+                  <div>
+                    <div className="text-[15px] font-semibold mb-1">{p.title}</div>
+                    <div className="text-[13px] leading-[1.7] text-[#6E6E73]">{p.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
 
-        <Section
-          id="security"
-          icon={FiLock}
-          eyebrow="Security controls"
-          title="How we protect accounts and data"
-          desc="Practical safeguards designed for everyday merchant workflows."
-          tone="tinted"
-        >
-          <div className="grid gap-4 md:grid-cols-2">
-            <InfoCard
-              icon={FiKey}
-              title="Secrets and integrations"
-              desc="API keys and credentials are handled as sensitive configuration."
-            >
-              <BulletList
+            <Divider />
+
+            {/* ════ PRIVACY POLICY ════ */}
+            <SectionAnchor id="privacy-policy" />
+            <div className="mb-2">
+              <Tag>Legal</Tag>
+              <h2 className="mt-3 text-[26px] sm:text-[32px] font-semibold tracking-tight text-[#1D1D1F]">Privacy Policy</h2>
+              <p className="mt-2 text-[14px] text-[#6E6E73]">
+                Proova, Inc. · Effective Date: April 2026 · Version 1.0
+              </p>
+            </div>
+
+            <CalloutBox icon="ℹ️" title="Who this applies to">
+              This Privacy Policy applies to all users of the Proova platform globally — visitors, registered customers, and end users whose data is processed through the platform. If you are in the EEA or UK, additional rights described in the International Transfers section apply to you.
+            </CalloutBox>
+
+            <PolicyP>
+              Proova, Inc. ("Proova", "we", "our", or "us") operates a revenue attribution and analytics platform that helps businesses track and measure marketing performance across online and offline channels. This Privacy Policy describes how we collect, use, disclose, and safeguard your information when you use our platform, website, and related services (the "Services").
+            </PolicyP>
+            <PolicyP>
+              By accessing or using our Services, you acknowledge that you have read and agree to this Privacy Policy. If you do not agree, please discontinue use immediately.
+            </PolicyP>
+
+            <PolicyH2>1. Who We Are</PolicyH2>
+            <PolicyP>
+              Proova, Inc. is the data controller responsible for personal data processed through our Services. For any privacy-related questions, contact us at <a href="mailto:privacy@proova.app" className="text-[#0A84FF] hover:underline">privacy@proova.app</a>.
+            </PolicyP>
+
+            <Divider />
+
+            {/* ════ DATA COLLECTION ════ */}
+            <SectionAnchor id="data-collection" />
+            <Tag>Transparency</Tag>
+            <PolicyH2>2. Information We Collect</PolicyH2>
+            <PolicyP>
+              We collect only the information necessary to operate our Services. Data falls into the following categories:
+            </PolicyP>
+
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 my-6">
+              <Card
+                icon="👤"
+                title="Account & Registration"
+                desc="Information needed to create and manage your Proova account."
                 items={[
-                  "Restrict internal access to production systems where possible.",
-                  "Avoid exposing full secrets in the UI after setup.",
-                  "Prefer scoped permissions when connecting external services.",
+                  "Full name and professional title",
+                  "Business email address",
+                  "Company name and size",
+                  "Password (stored in hashed form — never readable)",
+                  "Billing contact information",
                 ]}
               />
-            </InfoCard>
-
-            <InfoCard
-              icon={FiServer}
-              title="Operational safety"
-              desc="Systems are designed for reliability and safe failure modes."
-            >
-              <BulletList
+              <Card
+                icon="📊"
+                title="Platform & Usage Data"
+                desc="Data generated as you interact with the platform."
                 items={[
-                  "Server-side click capture before redirect to reduce attribution loss.",
-                  "Basic abuse protection on public endpoints (rate limiting where applicable).",
-                  "Monitoring and logging for suspicious patterns and system health.",
+                  "Click IDs, session tokens, referral parameters",
+                  "Timestamps of attribution events",
+                  "IP address (fraud prevention & analytics)",
+                  "Browser type, OS, device identifiers",
+                  "Features used and navigation patterns",
                 ]}
               />
-            </InfoCard>
-
-            <InfoCard
-              icon={FiShield}
-              title="Subscription payments"
-              desc="Billing is handled by established payment providers."
-            >
-              <BulletList
+              <Card
+                icon="💰"
+                title="Revenue & Transaction Data"
+                desc="Data required for attribution and reconciliation."
                 items={[
-                  "We do not store your card details on Proova servers.",
-                  "Refunds for subscriptions can be processed through the payment provider where applicable.",
+                  "Order IDs, amounts, currency, status",
+                  "Product SKUs and categories (if provided)",
+                  "Offline and online conversion events",
+                  "CSV imports and webhook data you submit",
                 ]}
               />
-            </InfoCard>
+              <Card
+                icon="💳"
+                title="Billing & Payment"
+                desc="Handled via PCI-DSS-compliant providers. We store only:"
+                items={[
+                  "Last four digits of card (reference only)",
+                  "Billing address and postal code",
+                  "Transaction IDs and payment status",
+                  "Subscription tier and renewal history",
+                ]}
+              />
+            </div>
 
-            <InfoCard
-              icon={FiAlertTriangle}
-              title="Security reporting"
-              desc="If you believe you found an issue, we want to hear about it."
-            >
-              <div className="rounded-2xl border border-app-border bg-white/70 p-4 text-sm leading-6 text-app-muted">
-                Contact:{" "}
-                <span className="font-semibold text-app-ink">proovaapp@outlook.com</span>
+            <CalloutBox icon="🔒" title="What we never collect">
+              We do not store raw credit card numbers, CVV codes, online banking passwords, or banking credentials. Payment data is handled exclusively by PCI-DSS-compliant processors (Stripe). We do not use invasive fingerprinting as a default approach.
+            </CalloutBox>
+
+            <Divider />
+
+            {/* ════ DATA USE ════ */}
+            <SectionAnchor id="data-use" />
+            <Tag>Purpose</Tag>
+            <PolicyH2>3. How We Use Your Information</PolicyH2>
+
+            <PolicyH3>3.1 Service Delivery</PolicyH3>
+            <PolicyList items={[
+              "Authenticate and maintain your account",
+              "Provide attribution tracking, analytics dashboards, and reporting",
+              "Process transactions and manage subscriptions",
+              "Integrate with third-party platforms you authorize",
+            ]} />
+
+            <PolicyH3>3.2 Platform Improvement</PolicyH3>
+            <PolicyList items={[
+              "Analyze usage patterns to identify and fix bugs",
+              "Develop new features and improve existing functionality",
+              "Fraud detection and abuse prevention (using aggregated, anonymized data)",
+            ]} />
+
+            <PolicyH3>3.3 Communication</PolicyH3>
+            <PolicyList items={[
+              "Transactional emails: invoices, password resets, security alerts",
+              "Product updates, release notes, and service announcements",
+              "Responding to support and sales inquiries",
+              "Marketing communications with your consent (opt-out available at any time)",
+            ]} />
+
+            <PolicyH3>3.4 Legal & Security Obligations</PolicyH3>
+            <PolicyList items={[
+              "Detect, investigate, and prevent fraud and unauthorized access",
+              "Comply with applicable laws, regulations, and legal processes",
+              "Enforce our Terms of Service",
+              "Protect rights, property, and safety of Proova, users, and the public",
+            ]} />
+
+            <PolicyH2>4. Legal Bases for Processing (GDPR / UK GDPR)</PolicyH2>
+            <PolicyP>For users in the EEA or United Kingdom, we process data under the following legal bases:</PolicyP>
+
+            <TableWrapper>
+              <table className="w-full text-[13px]">
+                <thead>
+                  <tr className="border-b border-[#E5E5EA] bg-[#F5F5F7]">
+                    <th className="text-left px-4 sm:px-5 py-3 font-semibold text-[#1D1D1F] whitespace-nowrap">Legal Basis</th>
+                    <th className="text-left px-4 sm:px-5 py-3 font-semibold text-[#1D1D1F]">When We Apply It</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    ["Performance of Contract", "Delivering the Services you subscribed to"],
+                    ["Legitimate Interests", "Analytics, fraud prevention, product improvement, direct marketing to existing customers"],
+                    ["Consent", "Marketing communications, non-essential cookies (withdrawal possible at any time)"],
+                    ["Legal Obligation", "Compliance with applicable laws, tax regulations, and court orders"],
+                  ].map(([basis, when], i) => (
+                    <tr key={i} className={cx("border-b border-[#E5E5EA] last:border-0", i % 2 === 1 ? "bg-[#FAFAFA]" : "bg-white")}>
+                      <td className="px-4 sm:px-5 py-3 font-medium text-[#1D1D1F] align-top whitespace-nowrap">{basis}</td>
+                      <td className="px-4 sm:px-5 py-3 text-[#3D3D3F]">{when}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </TableWrapper>
+
+            <Divider />
+
+            {/* ════ DATA SHARING ════ */}
+            <SectionAnchor id="data-sharing" />
+            <Tag>Third Parties</Tag>
+            <PolicyH2>5. Data Sharing & Disclosure</PolicyH2>
+            <PolicyP>
+              <strong>We do not sell, rent, or trade your personal data.</strong> We share data only in the following circumstances:
+            </PolicyP>
+
+            <PolicyH3>5.1 Service Providers (Sub-processors)</PolicyH3>
+            <PolicyP>
+              We work with trusted sub-processors who access data only as needed to perform their contracted functions. All sub-processors are bound by Data Processing Agreements (DPAs) and must maintain adequate security standards.
+            </PolicyP>
+
+            <TableWrapper>
+              <table className="w-full text-[13px]">
+                <thead>
+                  <tr className="border-b border-[#E5E5EA] bg-[#F5F5F7]">
+                    <th className="text-left px-4 sm:px-5 py-3 font-semibold text-[#1D1D1F]">Category</th>
+                    <th className="text-left px-4 sm:px-5 py-3 font-semibold text-[#1D1D1F]">Examples</th>
+                    <th className="text-left px-4 sm:px-5 py-3 font-semibold text-[#1D1D1F]">Purpose</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    ["Cloud Infrastructure", "AWS, Google Cloud", "Hosting and data storage"],
+                    ["Payment Processing", "Stripe", "Subscription billing"],
+                    ["Customer Support", "Intercom, Zendesk", "Support ticket management"],
+                    ["Error Monitoring", "Sentry, Datadog", "Platform reliability"],
+                    ["Email Delivery", "SendGrid, Postmark", "Transactional emails"],
+                  ].map(([cat, ex, pur], i) => (
+                    <tr key={i} className={cx("border-b border-[#E5E5EA] last:border-0", i % 2 === 1 ? "bg-[#FAFAFA]" : "bg-white")}>
+                      <td className="px-4 sm:px-5 py-3 font-medium text-[#1D1D1F] align-top whitespace-nowrap">{cat}</td>
+                      <td className="px-4 sm:px-5 py-3 text-[#6E6E73] whitespace-nowrap">{ex}</td>
+                      <td className="px-4 sm:px-5 py-3 text-[#3D3D3F]">{pur}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </TableWrapper>
+
+            <PolicyP>A current list of sub-processors is available upon request at <a href="mailto:privacy@proova.app" className="text-[#0A84FF] hover:underline">privacy@proova.app</a>.</PolicyP>
+
+            <PolicyH3>5.2 Business Transfers</PolicyH3>
+            <PolicyP>
+              If Proova undergoes a merger, acquisition, or sale of assets, your information may be transferred to the successor entity. We will notify you via email with at least 30 days' advance notice.
+            </PolicyP>
+
+            <PolicyH3>5.3 Legal Disclosures</PolicyH3>
+            <PolicyP>
+              We may disclose data when required by law, subpoena, or court order, or to protect the rights and safety of Proova, our users, or the public. We will notify you of such requests where legally permitted.
+            </PolicyP>
+
+            <PolicyH3>5.4 Aggregated Data</PolicyH3>
+            <PolicyP>
+              We may share aggregated, anonymized data (from which individuals cannot be identified) for research, industry reports, or with partners. This is not personal data.
+            </PolicyP>
+
+            <Divider />
+
+            {/* ════ YOUR RIGHTS ════ */}
+            <SectionAnchor id="your-rights" />
+            <Tag>Your Rights</Tag>
+            <PolicyH2>6. Your Privacy Rights</PolicyH2>
+            <PolicyP>
+              Depending on your location, you have the following rights. To exercise any of them, email <a href="mailto:privacy@proova.app" className="text-[#0A84FF] hover:underline">privacy@proova.app</a> with subject "Privacy Rights Request". We respond within 30 days.
+            </PolicyP>
+
+            <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 my-6">
+              {[
+                { icon: "👁️", right: "Right of Access", desc: "Obtain a copy of the personal data we hold about you." },
+                { icon: "✏️", right: "Right to Rectification", desc: "Request correction of inaccurate or incomplete data." },
+                { icon: "🗑️", right: "Right to Erasure", desc: "Request deletion of your data (subject to legal obligations)." },
+                { icon: "⏸️", right: "Right to Restriction", desc: "Request we limit processing in certain circumstances." },
+                { icon: "📦", right: "Right to Portability", desc: "Receive your data in a structured, machine-readable format." },
+                { icon: "🚫", right: "Right to Object", desc: "Object to processing based on legitimate interests, including direct marketing." },
+                { icon: "↩️", right: "Withdraw Consent", desc: "Where processing is consent-based, withdraw at any time without affecting past processing." },
+                { icon: "🏛️", right: "Lodge a Complaint", desc: "File a complaint with your local data protection authority at any time." },
+              ].map((r) => (
+                <div key={r.right} className="flex gap-3 rounded-2xl border border-[#E5E5EA] bg-white p-4">
+                  <span className="text-[20px] mt-0.5 shrink-0">{r.icon}</span>
+                  <div>
+                    <div className="text-[13px] font-semibold text-[#1D1D1F] mb-0.5">{r.right}</div>
+                    <div className="text-[12px] leading-[1.6] text-[#6E6E73]">{r.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <Divider />
+
+            {/* ════ SECURITY ════ */}
+            <SectionAnchor id="security" />
+            <Tag>Security</Tag>
+            <PolicyH2>7. Security Measures</PolicyH2>
+            <PolicyP>
+              We implement industry-standard technical and organizational safeguards to protect your data:
+            </PolicyP>
+
+            <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 my-5">
+              {[
+                { icon: "🔐", title: "Encryption in Transit", desc: "All data transmitted to and from Proova is encrypted using TLS 1.2 or higher." },
+                { icon: "🗄️", title: "Encryption at Rest", desc: "Sensitive data is encrypted at rest using AES-256." },
+                { icon: "👥", title: "Access Controls", desc: "Role-based access controls (RBAC) restrict data access to authorized personnel only." },
+                { icon: "🔑", title: "Multi-Factor Auth", desc: "MFA is enforced on all internal Proova systems and production access." },
+                { icon: "🔍", title: "Security Audits", desc: "Regular vulnerability assessments and security reviews are performed." },
+                { icon: "🚨", title: "Incident Response", desc: "We maintain documented breach notification processes aligned with GDPR timelines." },
+              ].map((s) => (
+                <div key={s.title} className="flex gap-3 rounded-2xl border border-[#E5E5EA] bg-white p-4">
+                  <span className="text-[22px] shrink-0">{s.icon}</span>
+                  <div>
+                    <div className="text-[13px] font-semibold text-[#1D1D1F] mb-0.5">{s.title}</div>
+                    <div className="text-[12px] leading-[1.6] text-[#6E6E73]">{s.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <CalloutBox icon="⚠️" title="Important note">
+              While we take data security seriously, no system can guarantee absolute security. In the event of a data breach affecting your rights and freedoms, we will notify you and relevant supervisory authorities as required by applicable law (within 72 hours under GDPR).
+            </CalloutBox>
+
+            <PolicyH2>8. Payments Security</PolicyH2>
+            <PolicyP>
+              Payments are processed exclusively by <strong>Stripe, Inc.</strong>, a PCI-DSS Level 1 certified payment processor. Proova does not collect, store, or transmit raw credit card numbers, CVV codes, or banking credentials. We retain only the last four digits of your card for reference, billing address, and transaction metadata.
+            </PolicyP>
+
+            <Divider />
+
+            {/* ════ COOKIES ════ */}
+            <SectionAnchor id="cookies" />
+            <Tag>Cookies</Tag>
+            <PolicyH2>9. Cookies & Tracking Technologies</PolicyH2>
+            <PolicyP>
+              We use cookies and similar technologies. You can manage preferences through our Cookie Settings panel (in the platform footer) or your browser settings. Disabling certain cookies may affect platform functionality.
+            </PolicyP>
+
+            <TableWrapper>
+              <table className="w-full text-[13px]">
+                <thead>
+                  <tr className="border-b border-[#E5E5EA] bg-[#F5F5F7]">
+                    <th className="text-left px-4 sm:px-5 py-3 font-semibold text-[#1D1D1F]">Cookie Type</th>
+                    <th className="text-left px-4 sm:px-5 py-3 font-semibold text-[#1D1D1F]">Purpose</th>
+                    <th className="text-left px-4 sm:px-5 py-3 font-semibold text-[#1D1D1F] whitespace-nowrap">Can Opt Out?</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    ["Strictly Necessary", "Authentication, security, core platform functionality", "No — required"],
+                    ["Functional", "Language preferences, session state, UI settings", "Limited"],
+                    ["Analytics", "Aggregate usage patterns (e.g., Google Analytics)", "Yes — via cookie banner"],
+                    ["Marketing", "Ad retargeting and campaign measurement", "Yes — consent required"],
+                  ].map(([type, purpose, opt], i) => (
+                    <tr key={i} className={cx("border-b border-[#E5E5EA] last:border-0", i % 2 === 1 ? "bg-[#FAFAFA]" : "bg-white")}>
+                      <td className="px-4 sm:px-5 py-3 font-medium text-[#1D1D1F] align-top whitespace-nowrap">{type}</td>
+                      <td className="px-4 sm:px-5 py-3 text-[#3D3D3F]">{purpose}</td>
+                      <td className="px-4 sm:px-5 py-3 whitespace-nowrap">
+                        <span className={cx(
+                          "inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold",
+                          opt.startsWith("No") ? "bg-[#FEE2E2] text-[#991B1B]" :
+                          opt.startsWith("Yes") ? "bg-[#E8F5E9] text-[#1B5E20]" :
+                          "bg-[#FEF9C3] text-[#92400E]"
+                        )}>
+                          {opt}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </TableWrapper>
+
+            <Divider />
+
+            {/* ════ INTERNATIONAL ════ */}
+            <SectionAnchor id="international" />
+            <Tag>Global</Tag>
+            <PolicyH2>10. International Data Transfers</PolicyH2>
+            <PolicyP>
+              Proova may transfer personal data outside your country of residence. When transferring from the EEA, UK, or Switzerland to countries not deemed to provide adequate data protection, we rely on:
+            </PolicyP>
+            <PolicyList items={[
+              "Standard Contractual Clauses (SCCs) approved by the European Commission",
+              "UK International Data Transfer Agreements (IDTAs) where applicable",
+              "Other lawful transfer mechanisms as required by applicable law",
+            ]} />
+            <PolicyP>
+              Details of applicable transfer mechanisms are in our Data Processing Agreement (DPA), available on request at <a href="mailto:privacy@proova.app" className="text-[#0A84FF] hover:underline">privacy@proova.app</a>.
+            </PolicyP>
+
+            <PolicyH2>11. Children's Privacy</PolicyH2>
+            <PolicyP>
+              Our Services are not directed to individuals under the age of 16 (or the applicable age of digital consent in your jurisdiction). We do not knowingly collect personal data from children. If we become aware we have inadvertently done so, we will delete it promptly. Contact <a href="mailto:privacy@proova.app" className="text-[#0A84FF] hover:underline">privacy@proova.app</a> if you believe a child has submitted data.
+            </PolicyP>
+
+            <Divider />
+
+            {/* ════ RETENTION ════ */}
+            <SectionAnchor id="retention" />
+            <Tag>Retention</Tag>
+            <PolicyH2>12. Data Retention</PolicyH2>
+            <PolicyP>
+              We retain personal data only as long as necessary to fulfill the purposes described in this policy, or as required by law.
+            </PolicyP>
+
+            <TableWrapper>
+              <table className="w-full text-[13px]">
+                <thead>
+                  <tr className="border-b border-[#E5E5EA] bg-[#F5F5F7]">
+                    <th className="text-left px-4 sm:px-5 py-3 font-semibold text-[#1D1D1F]">Data Type</th>
+                    <th className="text-left px-4 sm:px-5 py-3 font-semibold text-[#1D1D1F]">Retention Period</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    ["Account data", "Duration of subscription + 90 days after closure"],
+                    ["Transaction & billing data", "7 years (tax and financial reporting obligations)"],
+                    ["Usage logs & analytics", "24 months identifiable, then anonymized"],
+                    ["Support communications", "3 years from date of last contact"],
+                    ["Deleted data in backups", "Up to 30 days before permanent deletion"],
+                  ].map(([type, period], i) => (
+                    <tr key={i} className={cx("border-b border-[#E5E5EA] last:border-0", i % 2 === 1 ? "bg-[#FAFAFA]" : "bg-white")}>
+                      <td className="px-4 sm:px-5 py-3 font-medium text-[#1D1D1F] whitespace-nowrap">{type}</td>
+                      <td className="px-4 sm:px-5 py-3 text-[#3D3D3F]">{period}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </TableWrapper>
+
+            <PolicyH2>13. Your Data Control</PolicyH2>
+            <PolicyP>You may request deletion of your data at any time. Contact <a href="mailto:privacy@proova.app" className="text-[#0A84FF] hover:underline">privacy@proova.app</a>. Note that some data may be retained to fulfill legal obligations even after deletion requests.</PolicyP>
+
+            <PolicyH2>14. Changes to This Policy</PolicyH2>
+            <PolicyP>
+              We may update this Privacy Policy from time to time. When material changes occur, we will:
+            </PolicyP>
+            <PolicyList items={[
+              "Post the updated policy with a new Effective Date",
+              "Notify you via email at the address associated with your account",
+              "Request re-consent where required by applicable law",
+            ]} />
+            <PolicyP>
+              Your continued use of the Services after the effective date constitutes acceptance.
+            </PolicyP>
+
+            <Divider />
+
+            {/* ════ COMPLIANCE ════ */}
+            <SectionAnchor id="compliance" />
+            <Tag>Compliance</Tag>
+            <PolicyH2>15. Compliance Posture</PolicyH2>
+            <PolicyP>
+              Proova is designed for global businesses. We take a proactive approach to privacy and compliance as we grow.
+            </PolicyP>
+
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 my-6">
+              <Card
+                icon="🇪🇺"
+                title="GDPR / UK GDPR"
+                desc="We process EEA and UK data in compliance with GDPR and UK GDPR, including lawful basis documentation, data subject rights, and DPA agreements."
+                items={[
+                  "Standard Contractual Clauses for transfers",
+                  "Data Processing Agreements available on request",
+                  "72-hour breach notification process",
+                  "Privacy by design principles applied",
+                ]}
+              />
+              <Card
+                icon="🇺🇸"
+                title="CCPA / US Privacy"
+                desc="For California residents, we honor all rights under the CCPA including right to know, right to delete, and right to opt-out."
+                items={[
+                  "No sale of personal information",
+                  "Right to know what data is collected",
+                  "Right to request deletion",
+                  "Non-discrimination for exercising rights",
+                ]}
+              />
+              <Card
+                icon="💳"
+                title="Paddle Merchant Compliance"
+                desc="Proova uses Paddle as a Merchant of Record for subscription billing. Paddle handles VAT, tax compliance, and payment regulation globally."
+                items={[
+                  "Paddle manages tax collection and remittance",
+                  "Payment data governed by Paddle's PCI-DSS compliance",
+                  "Subscription terms disclosed at checkout",
+                  "Refunds processed via original payment method",
+                ]}
+              />
+              <Card
+                icon="🌍"
+                title="Global Merchant Support"
+                desc="Proova supports merchants worldwide including UK, US, EU, and Africa."
+                items={[
+                  "Region-appropriate bank linking via Open Banking / aggregators",
+                  "CSV import fallback for all regions",
+                  "DPA available for enterprise customers",
+                  "Security questionnaires fulfilled on request",
+                ]}
+              />
+            </div>
+
+            <CalloutBox icon="📋" title="Procurement or compliance review?">
+              If your team needs a security questionnaire response, DPA, or vendor documentation, email <a href="mailto:hello@proova.app" className="text-[#0A84FF] hover:underline font-semibold">hello@proova.app</a> and we'll respond within 2 business days.
+            </CalloutBox>
+
+            <Divider />
+
+            {/* ════ CONTACT ════ */}
+            <SectionAnchor id="contact" />
+            <Tag>Contact</Tag>
+            <PolicyH2>16. Contact Us</PolicyH2>
+            <PolicyP>
+              If you have questions, requests, or concerns about this Privacy Policy or our data practices, please reach out through any of the following channels:
+            </PolicyP>
+
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-3 my-6">
+              {[
+                {
+                  icon: "🔐",
+                  title: "Privacy Requests",
+                  desc: "Data access, deletion, portability, and all privacy rights requests.",
+                  email: "privacy@proova.app",
+                  tag: "Privacy",
+                },
+                {
+                  icon: "💬",
+                  title: "General Inquiries",
+                  desc: "Questions about Proova, compliance, or vendor onboarding.",
+                  email: "hello@proova.app",
+                  tag: "General",
+                },
+                {
+                  icon: "🛠️",
+                  title: "Support & Billing",
+                  desc: "Platform support, refund requests, and billing inquiries.",
+                  email: "support@proova.app",
+                  tag: "Support",
+                },
+              ].map((c) => (
+                <div key={c.title} className="rounded-2xl border border-[#E5E5EA] bg-white p-4 sm:p-5">
+                  <div className="text-[22px] sm:text-[24px] mb-3">{c.icon}</div>
+                  <div className="text-[14px] font-semibold text-[#1D1D1F] mb-1">{c.title}</div>
+                  <div className="text-[12px] leading-[1.7] text-[#6E6E73] mb-4">{c.desc}</div>
+                  <a
+                    href={`mailto:${c.email}`}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-[#F5F5F7] px-3 py-1.5 text-[12px] font-semibold text-[#1D1D1F] hover:bg-[#E5E5EA] transition-colors break-all"
+                  >
+                    <span>✉️</span>
+                    {c.email}
+                  </a>
+                </div>
+              ))}
+            </div>
+
+            <div className="rounded-2xl border border-[#E5E5EA] bg-[#F5F5F7] p-4 sm:p-5 text-[13px] text-[#6E6E73] leading-[1.7]">
+              <strong className="text-[#1D1D1F]">Response commitment:</strong> We aim to acknowledge all privacy requests within <strong className="text-[#1D1D1F]">2 business days</strong> and fully resolve them within <strong className="text-[#1D1D1F]">30 days</strong>. For complex requests requiring additional time, we will inform you within the initial response.
+            </div>
+
+            {/* ── FOOTER ── */}
+            <div className="mt-12 sm:mt-16 pb-10 border-t border-[#E5E5EA] pt-6 sm:pt-8 flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-2.5">
+                <div className="grid h-7 w-7 place-items-center overflow-hidden rounded-[8px] border border-[#E5E5EA] bg-white">
+                  <Image src="/proova.png" alt="Proova" width={28} height={28} className="h-full w-full object-contain" />
+                </div>
+                <span className="text-[13px] font-semibold text-[#1D1D1F]">Proova</span>
               </div>
-            </InfoCard>
-          </div>
 
-          <div className="mt-6 rounded-3xl border border-app-border bg-white/70 p-5">
-            <div className="flex items-center gap-2">
-              <FiClock className="h-4 w-4 text-app-ink" />
-              <div className="text-sm font-semibold text-app-ink">
-                Certifications and audits
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12px] text-[#6E6E73]">
+                <span>© {new Date().getFullYear()} Proova, Inc. All rights reserved.</span>
+                <span>Privacy Policy v1.0</span>
+                <span>Last updated: April 2026</span>
+              </div>
+
+              <div className="flex gap-3 text-[12px]">
+                <a href="mailto:privacy@proova.app" className="text-[#0A84FF] hover:underline">privacy@proova.app</a>
+                <span className="text-[#E5E5EA]">|</span>
+                <Link href="/" className="text-[#6E6E73] hover:text-[#1D1D1F]"></Link>
               </div>
             </div>
-            <p className="mt-2 text-sm leading-6 text-app-muted">
-              As Proova scales, we expect to pursue additional formal security reviews.
-              Until then, we focus on strong foundations, clear documentation, and merchant
-              control over data.
-            </p>
-          </div>
-        </Section>
 
-        <Section
-          id="privacy"
-          icon={FiDatabase}
-          eyebrow="Data & privacy"
-          title="What Proova collects (and what it avoids)"
-          desc="Attribution is built around proof — not surveillance."
-        >
-          <div className="grid gap-4 md:grid-cols-2">
-            <InfoCard
-              icon={FiFileText}
-              title="Data we commonly store"
-              desc="Information needed to connect revenue back to sources, campaigns, and influencers."
-            >
-              <BulletList
-                items={[
-                  "Tracking data: click IDs, timestamps, referrer, basic device/browser metadata.",
-                  "Structure: sources, campaigns, influencers, tracking links, reference codes.",
-                  "Revenue metadata: order IDs, amounts, currency, status (confirmed/refunded/chargeback when supported).",
-                  "Reconciliation imports you upload (e.g., CSV statements) to match payments to proof.",
-                ]}
-              />
-            </InfoCard>
-
-            <InfoCard
-              icon={FiShield}
-              title="Data we avoid by default"
-              desc="We minimize exposure unless it’s required for the workflow."
-            >
-              <BulletList
-                items={[
-                  "We do not need online banking passwords.",
-                  "We do not use invasive fingerprinting as a default approach.",
-                  "We do not sell merchant data.",
-                ]}
-              />
-            </InfoCard>
-          </div>
-
-          <div className="mt-6 rounded-3xl border border-app-border bg-white/70 p-5">
-            <div className="flex items-center gap-2">
-              <FiGlobe className="h-4 w-4 text-app-ink" />
-              <div className="text-sm font-semibold text-app-ink">Global usage</div>
-            </div>
-            <p className="mt-2 text-sm leading-6 text-app-muted">
-              Proova is designed for global merchants. If your organization requires specific
-              contractual terms (e.g., DPA) or region-based data handling, we support that as part
-              of onboarding where possible.
-            </p>
-          </div>
-        </Section>
-
-        <Section
-          id="compliance"
-          icon={FiCheckCircle}
-          eyebrow="Compliance posture"
-          title="GDPR / UK GDPR / CCPA — how we approach compliance"
-          desc="We take privacy seriously and design to reduce risk for merchants."
-          tone="tinted"
-        >
-          <div className="grid gap-4 md:grid-cols-2">
-            <InfoCard
-              icon={FiFileText}
-              title="Vendor paperwork"
-              desc="We can support common vendor requests (security questionnaire, DPA) during onboarding."
-            />
-            <InfoCard
-              icon={FiHelpCircle}
-              title="Influencer disclosure compliance"
-              desc="Proova can store campaign evidence, but disclosure requirements remain the merchant’s responsibility (FTC/ASA/platform rules)."
-            />
-          </div>
-
-          <div className="mt-6 rounded-3xl border border-app-border bg-white/70 p-5">
-            <div className="flex items-center gap-2">
-              <FiAlertTriangle className="h-4 w-4 text-app-ink" />
-              <div className="text-sm font-semibold text-app-ink">Tax reporting note</div>
-            </div>
-            <p className="mt-2 text-sm leading-6 text-app-muted">
-              Revenue reporting can be configured to match how your store treats tax (e.g., VAT-inclusive vs net).
-              When available through integrations, Proova can separate tax amounts from net revenue for reporting.
-            </p>
-          </div>
-        </Section>
-
-        <Section
-          id="bank-linking"
-          icon={FiGlobe}
-          eyebrow="Bank linking"
-          title="How bank linking will work (UK / US / Africa)"
-          desc="Bank linking must be done through established providers — not scraping."
-        >
-          <div className="grid gap-4 md:grid-cols-2">
-            <InfoCard
-              icon={FiShield}
-              title="Provider-based bank linking"
-              desc="Bank connections should be implemented through region-appropriate aggregators."
-            >
-              <BulletList
-                items={[
-                  "UK/EU: Open Banking providers (regulated access).",
-                  "US/Canada: providers covering major banks (e.g., Chase, Bank of America, Wells Fargo).",
-                  "Africa: aggregator coverage varies by country and bank.",
-                ]}
-              />
-            </InfoCard>
-
-            <InfoCard
-              icon={FiLock}
-              title="What we won’t do"
-              desc="High-risk approaches that create legal and security problems."
-            >
-              <BulletList
-                items={[
-                  "No online banking passwords.",
-                  "No screen-scraping bank websites.",
-                  "No storing raw bank login credentials.",
-                ]}
-              />
-            </InfoCard>
-          </div>
-
-          <div className="mt-6 rounded-3xl border border-app-border bg-white/70 p-5">
-            <div className="text-sm font-semibold text-app-ink">Reliable fallback</div>
-            <p className="mt-2 text-sm leading-6 text-app-muted">
-              Because bank coverage differs by region, Proova supports CSV imports as a dependable fallback
-              so reconciliation still works even without a live bank connection.
-            </p>
-          </div>
-        </Section>
-
-        <Section
-          id="deletion"
-          icon={FiTrash2}
-          eyebrow="Control"
-          title="Exports, retention, and deletion"
-          desc="You shouldn’t feel trapped if you cancel."
-          tone="tinted"
-        >
-          <div className="grid gap-4 md:grid-cols-2">
-            <InfoCard
-              icon={FiDatabase}
-              title="Export your data"
-              desc="Export workspace data for records or migration."
-            />
-            <InfoCard
-              icon={FiTrash2}
-              title="Delete your workspace"
-              desc="Request deletion of your workspace and associated data."
-            />
-          </div>
-
-          <div className="mt-6 rounded-3xl border border-app-border bg-white/70 p-5">
-            <div className="text-sm font-semibold text-app-ink">Retention approach</div>
-            <p className="mt-2 text-sm leading-6 text-app-muted">
-              Data is retained only as long as needed to provide the service and meet legitimate operational needs
-              (for example, billing records). Retention requirements can be discussed during onboarding where needed.
-            </p>
-          </div>
-        </Section>
-
-        <section className="mt-10 pb-14">
-          <div className="rounded-[28px] border border-app-border bg-white p-6 shadow-soft">
-            <div className="flex flex-wrap items-center gap-2">
-              <Chip tone="solid">Questions?</Chip>
-              <Chip>Security questionnaire</Chip>
-              <Chip>DPA</Chip>
-            </div>
-
-            <div className="mt-4 text-lg font-semibold tracking-tight text-app-ink">
-              Procurement or compliance review?
-            </div>
-            <p className="mt-2 text-sm leading-6 text-app-muted">
-              If your team needs a security questionnaire response or vendor documentation,
-              reach us here:
-            </p>
-
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <a
-                href="mailto:proovaapp@outlook.com"
-                className="inline-flex items-center gap-2 rounded-full border border-app-border bg-white px-4 py-2 text-xs font-semibold text-app-ink shadow-soft hover:bg-white/80"
-              >
-                proovaapp@outlook.com
-                <FiExternalLink className="h-4 w-4" />
-              </a>
-
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 rounded-full border border-app-border bg-white px-4 py-2 text-xs font-semibold text-app-ink shadow-soft hover:bg-white/80"
-              >
-                Back to Home
-              </Link>
-            </div>
-          </div>
-        </section>
+          </div>{/* end main content */}
+        </div>
       </div>
     </main>
   );
