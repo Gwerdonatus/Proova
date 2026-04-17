@@ -251,7 +251,7 @@ export function SiteFooter() {
   }
 
   function goPricing() {
-    router.push("/waitlist");
+    router.push("/pricing");
   }
 
   function goTop() {
@@ -383,12 +383,14 @@ export function SiteFooter() {
                   </div>
                 </div>
 
+                {/* ── UPDATED: Resources column with anchored links + Refund Policy ── */}
                 <div>
                   <ColumnTitle>Resources</ColumnTitle>
                   <div className="mt-4 flex flex-col gap-3">
-                    <FooterTextLink href="/trust">Privacy</FooterTextLink>
-                    <FooterTextLink href="/trust">Compliance</FooterTextLink>
-                    <FooterTextLink href="/trust">Terms</FooterTextLink>
+                    <FooterTextLink href="/trust#privacy-policy">Privacy</FooterTextLink>
+                    <FooterTextLink href="/trust#compliance">Compliance</FooterTextLink>
+                    <FooterTextLink href="/trust#terms">Terms</FooterTextLink>
+                    <FooterTextLink href="/trust#refund-policy">Refund Policy</FooterTextLink>
                   </div>
                 </div>
 
@@ -412,23 +414,31 @@ export function SiteFooter() {
                 </div>
               </div>
 
+              {/* ── UPDATED: Copyright bar with anchored links + Refund Policy ── */}
               <div className="mt-8 border-t border-black/8 pt-4 sm:mt-9 sm:pt-5">
                 <div className="flex flex-col gap-3 text-[12px] text-[#737373] sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
                     <span>© {year} Proova. All rights reserved.</span>
 
                     <FooterTextLink
-                      href="/trust"
+                      href="/trust#privacy-policy"
                       className="text-[12px] text-[#737373]"
                     >
                       Privacy Policy
                     </FooterTextLink>
 
                     <FooterTextLink
-                      href="/trust"
+                      href="/trust#terms"
                       className="text-[12px] text-[#737373]"
                     >
                       Terms
+                    </FooterTextLink>
+
+                    <FooterTextLink
+                      href="/trust#refund-policy"
+                      className="text-[12px] text-[#737373]"
+                    >
+                      Refund Policy
                     </FooterTextLink>
                   </div>
 

@@ -22,6 +22,8 @@ const NAV_SECTIONS = [
   { id: "international", label: "International Transfers" },
   { id: "retention", label: "Data Retention" },
   { id: "compliance", label: "Compliance" },
+  { id: "terms", label: "Terms of Service" },
+  { id: "refund-policy", label: "Refund Policy" },
   { id: "contact", label: "Contact Us" },
 ];
 
@@ -285,7 +287,7 @@ export default function TrustPageClient() {
                 maintaining strong security practices, and being transparent about everything we do with your information.
               </p>
 
-              {/* Section pill links — hidden on very small screens, shown as scrollable row */}
+              {/* Section pill links */}
               <div className="mt-6 hidden sm:flex flex-wrap gap-2">
                 {NAV_SECTIONS.slice(1).map((s) => (
                   <a
@@ -752,6 +754,7 @@ export default function TrustPageClient() {
                   "Non-discrimination for exercising rights",
                 ]}
               />
+              {/* ── UPDATED: added Refund Policy bullet ── */}
               <Card
                 icon="💳"
                 title="Paddle Merchant Compliance"
@@ -761,6 +764,7 @@ export default function TrustPageClient() {
                   "Payment data governed by Paddle's PCI-DSS compliance",
                   "Subscription terms disclosed at checkout",
                   "Refunds processed via original payment method",
+                  "Refund Policy: 30-day post-launch refund window for Founder Spot purchases",
                 ]}
               />
               <Card
@@ -779,6 +783,161 @@ export default function TrustPageClient() {
             <CalloutBox icon="📋" title="Procurement or compliance review?">
               If your team needs a security questionnaire response, DPA, or vendor documentation, email <a href="mailto:hello@proova.app" className="text-[#0A84FF] hover:underline font-semibold">hello@proova.app</a> and we'll respond within 2 business days.
             </CalloutBox>
+
+            <Divider />
+
+            {/* ════ TERMS OF SERVICE ════ */}
+            <SectionAnchor id="terms" />
+            <div className="mb-2">
+              <Tag>Legal</Tag>
+              <h2 className="mt-3 text-[26px] sm:text-[32px] font-semibold tracking-tight text-[#1D1D1F]">Terms of Service</h2>
+              <p className="mt-2 text-[14px] text-[#6E6E73]">
+                Proova, Inc. · Effective Date: April 2026 · Version 1.0
+              </p>
+            </div>
+
+            <CalloutBox icon="📄" title="Agreement to these Terms">
+              By accessing or using Proova's services, you agree to be bound by these Terms of Service. If you do not agree to these Terms, please discontinue use of our platform and services immediately.
+            </CalloutBox>
+
+            <PolicyH2>1. Description of Service</PolicyH2>
+            <PolicyP>
+              Proova is a revenue attribution and analytics platform. We provide tracking, reconciliation, and reporting tools for commerce businesses, enabling brands to understand which channels, campaigns, conversations, and transfers drove paid orders across online and offline journeys.
+            </PolicyP>
+
+            <PolicyH2>2. Founder Access</PolicyH2>
+            <PolicyP>
+              Founder Spot purchases grant the following benefits:
+            </PolicyP>
+            <PolicyList items={[
+              "Early access to the Proova platform upon launch",
+              "Assisted onboarding — we help you connect your store, set up tracking and reconciliation",
+              "A permanently locked annual subscription rate at your Founder price",
+              "Full access to all future features of Proova",
+            ]} />
+            <CalloutBox icon="🔒" title="About your locked rate">
+              The locked Founder rate applies for as long as your subscription remains active and in good standing. It is non-transferable and cannot be applied retroactively to other accounts or tiers. If a subscription lapses and is restarted, the locked rate may no longer apply.
+            </CalloutBox>
+
+            <PolicyH2>3. Accounts</PolicyH2>
+            <PolicyP>
+              You are responsible for maintaining the confidentiality of your account credentials and for all activity that occurs under your account. Notify us immediately at <a href="mailto:hello@proova.app" className="text-[#0A84FF] hover:underline">hello@proova.app</a> if you suspect any unauthorized access to or use of your account.
+            </PolicyP>
+
+            <PolicyH2>4. Acceptable Use</PolicyH2>
+            <PolicyP>
+              You agree not to use Proova to:
+            </PolicyP>
+            <PolicyList items={[
+              "Violate any applicable laws or regulations",
+              "Infringe the intellectual property or other rights of any third party",
+              "Transmit harmful code, malware, or disruptive content",
+              "Attempt to reverse-engineer, decompile, or extract source code from the platform",
+              "Resell, sublicense, or otherwise provide access to the platform to third parties without prior written permission from Proova",
+            ]} />
+
+            <PolicyH2>5. Intellectual Property</PolicyH2>
+            <PolicyP>
+              All platform content, trademarks, technology, software, and branding are the exclusive property of Proova, Inc. and are protected by applicable intellectual property laws. You retain full ownership of your own business data submitted to or processed through the platform.
+            </PolicyP>
+
+            <PolicyH2>6. Limitation of Liability</PolicyH2>
+            <PolicyP>
+              To the maximum extent permitted by applicable law, Proova's total liability arising out of or in connection with these Terms or the Services is limited to the total amount you paid to Proova in the twelve (12) months immediately preceding the claim. Proova shall not be liable for indirect, incidental, consequential, or punitive damages of any kind.
+            </PolicyP>
+
+            <PolicyH2>7. Governing Law</PolicyH2>
+            <PolicyP>
+              These Terms are governed by and construed in accordance with the laws of England and Wales, without regard to conflict of law principles. Any disputes arising under these Terms shall be subject to the exclusive jurisdiction of the courts of England and Wales.
+            </PolicyP>
+
+            <PolicyH2>8. Changes to Terms</PolicyH2>
+            <PolicyP>
+              We may update these Terms from time to time. Material changes will be communicated to you via email to the address associated with your account, with at least 14 days' notice before the changes take effect. Your continued use of the Services after the effective date of updated Terms constitutes your acceptance.
+            </PolicyP>
+
+            <PolicyH2>9. Contact for Legal Questions</PolicyH2>
+            <PolicyP>
+              For questions about these Terms, email <a href="mailto:hello@proova.app" className="text-[#0A84FF] hover:underline">hello@proova.app</a>.
+            </PolicyP>
+
+            <Divider />
+
+            {/* ════ REFUND POLICY ════ */}
+            <SectionAnchor id="refund-policy" />
+            <div className="mb-2">
+              <Tag>Billing</Tag>
+              <h2 className="mt-3 text-[26px] sm:text-[32px] font-semibold tracking-tight text-[#1D1D1F]">Refund Policy</h2>
+              <p className="mt-2 text-[14px] text-[#6E6E73]">
+                Proova, Inc. · Effective Date: April 2026
+              </p>
+            </div>
+
+            <CalloutBox icon="💡" title="Founder Spot purchases — how refunds work">
+              Because you are purchasing early access before the product is live, the refund window starts from the date the product officially launches — not the date of your purchase. This gives you a full 30 days to evaluate Proova once you can actually use it.
+            </CalloutBox>
+
+            <PolicyH2>1. Founder Spot Purchases</PolicyH2>
+            <PolicyP>
+              All Founder Spot purchases come with a <strong>30-day refund window starting from the date the Proova product is officially launched</strong> — not the date of purchase. This is because Founder Spots grant early access to a pre-launch product; the evaluation period does not begin until the platform is live and accessible.
+            </PolicyP>
+
+            <PolicyH2>2. How to Request a Refund</PolicyH2>
+            <PolicyList items={[
+              <>Email <a href="mailto:support@proova.app" className="text-[#0A84FF] hover:underline">support@proova.app</a> with the subject line "Refund Request"</>,
+              "Include your order details: order ID, email address used at checkout, and the reason for your request",
+              "We will acknowledge your request within 2 business days and process it within 5 business days",
+            ]} />
+
+            <PolicyH2>3. Eligibility</PolicyH2>
+            <PolicyList items={[
+              "Refunds apply to Founder Spot annual subscription purchases",
+              "Refund requests must be submitted within the 30-day post-launch window",
+              "Refunds are not available after the 30-day post-launch window has passed",
+            ]} />
+
+            <PolicyH2>4. Subscription Renewals</PolicyH2>
+            <PolicyP>
+              Annual subscription renewals may be cancelled within <strong>7 days of the renewal charge</strong> for a full refund. After 7 days from the renewal date, the subscription remains active until the end of the current term, with no partial refunds for unused time.
+            </PolicyP>
+
+            <PolicyH2>5. Processing</PolicyH2>
+            <PolicyP>
+              Approved refunds are returned to the original payment method used at checkout. Processing time depends on your bank or card issuer and typically takes 5–10 business days to appear on your statement. Proova does not charge any fees to process refunds.
+            </PolicyP>
+
+            <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 my-6">
+              {[
+                {
+                  icon: "📅",
+                  title: "30-Day Post-Launch Window",
+                  desc: "Founder Spot refunds are available for 30 days after the product officially launches, not from the purchase date.",
+                },
+                {
+                  icon: "🔄",
+                  title: "7-Day Renewal Window",
+                  desc: "Annual renewals can be refunded within 7 days of the renewal charge. After that, the subscription runs to end of term.",
+                },
+                {
+                  icon: "💳",
+                  title: "Original Payment Method",
+                  desc: "Refunds go back to the card or payment method used at purchase. Allow 5–10 business days for processing.",
+                },
+                {
+                  icon: "✉️",
+                  title: "Contact for Refunds",
+                  desc: "Email support@proova.app with subject 'Refund Request' and your order details. We respond within 2 business days.",
+                },
+              ].map((r) => (
+                <div key={r.title} className="flex gap-3 rounded-2xl border border-[#E5E5EA] bg-white p-4">
+                  <span className="text-[20px] mt-0.5 shrink-0">{r.icon}</span>
+                  <div>
+                    <div className="text-[13px] font-semibold text-[#1D1D1F] mb-0.5">{r.title}</div>
+                    <div className="text-[12px] leading-[1.6] text-[#6E6E73]">{r.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
 
             <Divider />
 
@@ -851,7 +1010,7 @@ export default function TrustPageClient() {
               <div className="flex gap-3 text-[12px]">
                 <a href="mailto:privacy@proova.app" className="text-[#0A84FF] hover:underline">privacy@proova.app</a>
                 <span className="text-[#E5E5EA]">|</span>
-                <Link href="/" className="text-[#6E6E73] hover:text-[#1D1D1F]"></Link>
+                <Link href="/" className="text-[#6E6E73] hover:text-[#1D1D1F]">Home</Link>
               </div>
             </div>
 

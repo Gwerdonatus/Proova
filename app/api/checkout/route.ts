@@ -1,9 +1,10 @@
-// app/api/checkout/route.ts
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
 type Tier = "nigeria" | "africa" | "global";
+
+// ---------------- COUNTRY LOGIC ----------------
 
 const AFRICA_ISO2 = new Set([
   "DZ","AO","BJ","BW","BF","BI","CM","CV","CF","TD","KM","CG","CD","DJ","EG","GQ","ER","SZ","ET","GA","GM","GH","GN","GW",
@@ -40,9 +41,17 @@ function computeTier(countryRaw: string): Tier {
   return "global";
 }
 
+// ---------------- HELPERS ----------------
+
 function getBaseUrl() {
   const base = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL;
   return (base || "").replace(/\/$/, "");
+}
+
+function getPaddleApiBase() {
+  return process.env.NEXT_PUBLIC_PADDLE_ENV === "sandbox"
+    ? "https://sandbox-api.paddle.com"
+    : "https://api.paddle.com";
 }
 
 async function safeJson(res: Response) {
@@ -68,6 +77,8 @@ async function fetchWithTimeout(url: string, init: RequestInit, timeoutMs: numbe
     clearTimeout(t);
   }
 }
+
+// ---------------- PAYSTACK ----------------
 
 async function paystackInitialize(payload: unknown, secret: string) {
   const url = "https://api.paystack.co/transaction/initialize";
@@ -98,6 +109,8 @@ async function paystackInitialize(payload: unknown, secret: string) {
   throw lastErr || new Error("Paystack initialize failed (network)");
 }
 
+// ---------------- MAIN ----------------
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -117,23 +130,22 @@ export async function POST(req: Request) {
 
     const tier = computeTier(country);
 
-    // Nigeria -> Paystack
+    // ================= PAYSTACK =================
     if (tier === "nigeria") {
       const baseUrl = getBaseUrl();
+      const secret = process.env.PAYSTACK_SECRET_KEY;
+
       if (!baseUrl) {
-        return NextResponse.json(
-          { error: "Missing APP_URL / NEXT_PUBLIC_APP_URL" },
-          { status: 500 }
-        );
+        return NextResponse.json({ error: "Missing APP_URL" }, { status: 500 });
       }
 
-      const secret = process.env.PAYSTACK_SECRET_KEY;
       if (!secret) {
         return NextResponse.json({ error: "Missing PAYSTACK_SECRET_KEY" }, { status: 500 });
       }
 
       const amount = 79_000 * 100;
       const reference = `proova_${Date.now()}_${Math.random().toString(16).slice(2)}`;
+
       const callback_url = `${baseUrl}/founder/success?provider=paystack&reference=${encodeURIComponent(reference)}`;
 
       const payload = {
@@ -167,24 +179,25 @@ export async function POST(req: Request) {
           url: out.json.data.authorization_url,
         });
       } catch (e: any) {
-        console.log("Paystack init network error:", e?.name, e?.code, e?.message);
+        console.log("Paystack network error:", e?.message);
         return NextResponse.json(
-          { error: "Paystack request failed (network/timeout). Please try again." },
+          { error: "Paystack request failed" },
           { status: 502 }
         );
       }
     }
 
-    // Africa (non-NG) + Global -> Paddle
+    // ================= PADDLE =================
+
     const paddleApiKey = process.env.PADDLE_API_KEY;
+    const baseUrl = getBaseUrl();
+
     if (!paddleApiKey) {
-      return NextResponse.json(
-        {
-          error:
-            "Paddle checkout is not configured yet. Please join the founder list and we’ll notify you as soon as checkout is live.",
-        },
-        { status: 503 }
-      );
+      return NextResponse.json({ error: "Missing PADDLE_API_KEY" }, { status: 500 });
+    }
+
+    if (!baseUrl) {
+      return NextResponse.json({ error: "Missing APP_URL" }, { status: 500 });
     }
 
     const priceId =
@@ -193,19 +206,11 @@ export async function POST(req: Request) {
         : process.env.PADDLE_PRICE_GLOBAL_USD;
 
     if (!priceId || !priceId.startsWith("pri_")) {
-      return NextResponse.json(
-        {
-          error:
-            tier === "africa"
-              ? "Missing PADDLE_PRICE_AFRICA_USD=pri_..."
-              : "Missing PADDLE_PRICE_GLOBAL_USD=pri_...",
-        },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Invalid price ID" }, { status: 500 });
     }
 
     const paddleRes = await fetchWithTimeout(
-      "https://api.paddle.com/transactions",
+      `${getPaddleApiBase()}/transactions`,
       {
         method: "POST",
         headers: {
@@ -213,14 +218,16 @@ export async function POST(req: Request) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          collection_mode: "automatic",
-          currency_code: "USD",
           items: [
             {
               price_id: priceId,
               quantity: 1,
             },
           ],
+          collection_mode: "automatic",
+          checkout: {
+            url: `${baseUrl}/founder/success?provider=paddle`, // ← FIXED: was success_url
+          },
           custom_data: {
             source: "proova_founder_checkout",
             tier,
@@ -237,9 +244,9 @@ export async function POST(req: Request) {
     const paddleOut = await safeJson(paddleRes);
 
     if (!paddleOut.ok || !paddleOut.json?.data?.id) {
-      console.log("Paddle transaction failed:", paddleOut.status, paddleOut.text);
+      console.log("Paddle failed:", paddleOut.status, paddleOut.text);
       return NextResponse.json(
-        { error: paddleOut.json?.error?.detail || "Paddle transaction failed" },
+        { error: paddleOut.json?.error?.detail || "Paddle failed" },
         { status: 400 }
       );
     }
@@ -248,6 +255,7 @@ export async function POST(req: Request) {
       provider: "paddle",
       transactionId: paddleOut.json.data.id,
     });
+
   } catch (e: any) {
     console.log("Checkout route error:", e);
     return NextResponse.json({ error: e?.message || "Server error" }, { status: 500 });
