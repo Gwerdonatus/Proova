@@ -60,8 +60,8 @@ export async function POST(req: Request) {
     });
 
     console.log("Waitlist notification sent:", {
-      id: mailResult?.data?.id || null,
-      error: mailResult?.error || null,
+      id: mailResult?.internalResult?.data?.id || null,
+      error: mailResult?.internalResult?.error || null,
     });
 
     return NextResponse.json({ ok: true });

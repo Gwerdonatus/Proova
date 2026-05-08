@@ -116,36 +116,25 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     const email = String(body?.email || "").trim();
-    const name = String(body?.name || "").trim();
+    const name  = String(body?.name  || "").trim();
     const whatsapp = String(body?.whatsapp || "").trim();
-    const country = String(body?.country || "").trim();
+    const country  = String(body?.country  || "").trim();
 
-    if (!email) {
-      return NextResponse.json({ error: "Missing email" }, { status: 400 });
-    }
-
-    if (!country) {
-      return NextResponse.json({ error: "Missing country" }, { status: 400 });
-    }
+    if (!email)   return NextResponse.json({ error: "Missing email"   }, { status: 400 });
+    if (!country) return NextResponse.json({ error: "Missing country" }, { status: 400 });
 
     const tier = computeTier(country);
 
-    // ================= PAYSTACK =================
+    // ================= PAYSTACK (Nigeria) =================
     if (tier === "nigeria") {
       const baseUrl = getBaseUrl();
-      const secret = process.env.PAYSTACK_SECRET_KEY;
+      const secret  = process.env.PAYSTACK_SECRET_KEY;
 
-      if (!baseUrl) {
-        return NextResponse.json({ error: "Missing APP_URL" }, { status: 500 });
-      }
+      if (!baseUrl) return NextResponse.json({ error: "Missing APP_URL"            }, { status: 500 });
+      if (!secret)  return NextResponse.json({ error: "Missing PAYSTACK_SECRET_KEY" }, { status: 500 });
 
-      if (!secret) {
-        return NextResponse.json({ error: "Missing PAYSTACK_SECRET_KEY" }, { status: 500 });
-      }
-
-      const amount = 79_000 * 100;
+      const amount    = 79_000 * 100; // kobo
       const reference = `proova_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-
       const callback_url = `${baseUrl}/founder/success?provider=paystack&reference=${encodeURIComponent(reference)}`;
 
       const payload = {
@@ -167,7 +156,7 @@ export async function POST(req: Request) {
         const out = await paystackInitialize(payload, secret);
 
         if (!out.ok || !out.json?.status || !out.json?.data?.authorization_url) {
-          console.log("Paystack init failed:", out.status, out.text);
+          console.error("Paystack init failed:", out.status, out.text);
           return NextResponse.json(
             { error: out.json?.message || "Paystack initialize failed" },
             { status: 400 }
@@ -179,26 +168,18 @@ export async function POST(req: Request) {
           url: out.json.data.authorization_url,
         });
       } catch (e: any) {
-        console.log("Paystack network error:", e?.message);
-        return NextResponse.json(
-          { error: "Paystack request failed" },
-          { status: 502 }
-        );
+        console.error("Paystack network error:", e?.message);
+        return NextResponse.json({ error: "Paystack request failed" }, { status: 502 });
       }
     }
 
-    // ================= PADDLE =================
+    // ================= PADDLE (Africa ex-NG + Global) =================
 
     const paddleApiKey = process.env.PADDLE_API_KEY;
-    const baseUrl = getBaseUrl();
+    const baseUrl      = getBaseUrl();
 
-    if (!paddleApiKey) {
-      return NextResponse.json({ error: "Missing PADDLE_API_KEY" }, { status: 500 });
-    }
-
-    if (!baseUrl) {
-      return NextResponse.json({ error: "Missing APP_URL" }, { status: 500 });
-    }
+    if (!paddleApiKey) return NextResponse.json({ error: "Missing PADDLE_API_KEY" }, { status: 500 });
+    if (!baseUrl)      return NextResponse.json({ error: "Missing APP_URL"        }, { status: 500 });
 
     const priceId =
       tier === "africa"
@@ -206,7 +187,7 @@ export async function POST(req: Request) {
         : process.env.PADDLE_PRICE_GLOBAL_USD;
 
     if (!priceId || !priceId.startsWith("pri_")) {
-      return NextResponse.json({ error: "Invalid price ID" }, { status: 500 });
+      return NextResponse.json({ error: "Invalid or missing Paddle price ID" }, { status: 500 });
     }
 
     const paddleRes = await fetchWithTimeout(
@@ -218,16 +199,11 @@ export async function POST(req: Request) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          items: [
-            {
-              price_id: priceId,
-              quantity: 1,
-            },
-          ],
+          items: [{ price_id: priceId, quantity: 1 }],
           collection_mode: "automatic",
-          checkout: {
-            url: `${baseUrl}/founder/success?provider=paddle`, // ← FIXED: was success_url
-          },
+          // ✅ No checkout.url here — successUrl is handled client-side by
+          //    Paddle.Checkout.open({ settings: { successUrl } }) which works
+          //    on localhost without any domain approval step.
           custom_data: {
             source: "proova_founder_checkout",
             tier,
@@ -244,9 +220,9 @@ export async function POST(req: Request) {
     const paddleOut = await safeJson(paddleRes);
 
     if (!paddleOut.ok || !paddleOut.json?.data?.id) {
-      console.log("Paddle failed:", paddleOut.status, paddleOut.text);
+      console.error("Paddle transaction creation failed:", paddleOut.status, paddleOut.text);
       return NextResponse.json(
-        { error: paddleOut.json?.error?.detail || "Paddle failed" },
+        { error: paddleOut.json?.error?.detail || "Paddle transaction creation failed" },
         { status: 400 }
       );
     }
@@ -257,7 +233,7 @@ export async function POST(req: Request) {
     });
 
   } catch (e: any) {
-    console.log("Checkout route error:", e);
+    console.error("Checkout route error:", e);
     return NextResponse.json({ error: e?.message || "Server error" }, { status: 500 });
   }
 }
